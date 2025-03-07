@@ -1,15 +1,17 @@
-require("dotenv").config();
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-
+import dotenv from "dotenv";
+import express from "express";
+import mongoose from "mongoose";
+import cors from "cors";
+dotenv.config();
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-const authRoutes = require("./routes/authRoutes");
+import authRoutes from "./routes/authRoutes.js";
+import donationRoutes from "./routes/donationRoutes.js";
 
 app.use("/api/auth", authRoutes);
+app.use("/api/donation", donationRoutes);
 
 // Connect to MongoDB
 mongoose

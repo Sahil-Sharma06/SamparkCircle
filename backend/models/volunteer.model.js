@@ -1,11 +1,14 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
-const VolunteerSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  ngo: { type: mongoose.Schema.Types.ObjectId, ref: "NGO", required: true },
-  event: { type: mongoose.Schema.Types.ObjectId, ref: "Event", required: true },
-  status: { type: String, enum: ["Pending", "Approved", "Rejected"], default: "Pending" },
-  appliedAt: { type: Date, default: Date.now },
+const UserSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  role: { type: String, enum: ["ngo", "volunteer", "donor"], required: true },
+  profileImage: { type: String, default: "" },
+  createdAt: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model("Volunteer", VolunteerSchema);
+const User = mongoose.model("User", UserSchema);
+
+export default User;

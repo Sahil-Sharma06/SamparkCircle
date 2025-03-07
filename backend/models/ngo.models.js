@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const NGOSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -12,5 +12,6 @@ const NGOSchema = new mongoose.Schema({
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   createdAt: { type: Date, default: Date.now },
 });
+const NGO = mongoose.model("NGO", NGOSchema);
 
-module.exports = mongoose.model("NGO", NGOSchema);
+export default NGO;
