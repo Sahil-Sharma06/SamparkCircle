@@ -2,10 +2,29 @@ import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-// User Signup
+// JWT Middleware for Authentication
+export const authenticateUser = (req, res, next) => {
+  const token = req.header("Authorization");
+  if (!token) return res.status(401).json({ msg: "Access Denied. No token provided." });
+
+  try {
+    const verified = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = verified;
+    next();
+  } catch (err) {
+    res.status(400).json({ msg: "Invalid token." });
+  }
+};
+
 export const signup = async (req, res) => {
   try {
+    console.log("Signup Request Body:", req.body); // ✅ Debug request payload
+
     const { name, email, password, role } = req.body;
+
+    if (!name || !email || !password || !role) {
+      return res.status(400).json({ msg: "All fields are required" });
+    }
 
     let user = await User.findOne({ email });
     if (user) return res.status(400).json({ msg: "User already exists" });
@@ -16,13 +35,15 @@ export const signup = async (req, res) => {
     user = new User({ name, email, password: hashedPassword, role });
     await user.save();
 
-    res.status(201).json({ msg: "User registered successfully" });
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "1h" });
+
+    res.status(201).json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
   } catch (err) {
+    console.error("Signup Error:", err.message);
     res.status(500).json({ error: err.message });
   }
 };
 
-//hello from harsh
 // User Login
 export const login = async (req, res) => {
   try {
