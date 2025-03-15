@@ -3,26 +3,71 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 dotenv.config();
-const app = express();
-app.use(express.json());
-app.use(cors());
 
+// Validate essential environment variables
+const requiredEnvVars = ['MONGO_URI', 'JWT_SECRET'];
+const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+if (missingEnvVars.length > 0) {
+  console.error(`Missing required environment variables: ${missingEnvVars.join(', ')}`);
+  process.exit(1);
+}
+
+const app = express();
+
+// More permissive CORS for development
+app.use(cors({
+  origin: '*', // Allow all origins in development
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+app.use(express.json());
+
+// Import routes
 import authRoutes from "./routes/authRoutes.js";
 import donationRoutes from "./routes/donationRoutes.js";
+import eventRoutes from "./routes/eventRoutes.js";
+import fundraiserRoutes from "./routes/fundraiserRoutes.js";
+import ngoRoutes from "./routes/ngoRoutes.js";
 
+// Test endpoint that doesn't require database connection
+app.get("/api/test", (req, res) => {
+  res.json({ message: "API is working!", timestamp: new Date().toISOString() });
+});
+
+// Root endpoint
+app.get("/", (req, res) => {
+  res.send("Welcome to SamparkCircle API!");
+});
+
+// Use routes
 app.use("/api/auth", authRoutes);
 app.use("/api/donation", donationRoutes);
+app.use("/api/events", eventRoutes);
+app.use("/api/fundraisers", fundraiserRoutes);
+app.use("/api/ngos", ngoRoutes);
+
+// Global error handler middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+    error: "Server error",
+    message: process.env.NODE_ENV === 'development' ? err.message : 'An unexpected error occurred'
+  });
+});
 
 // Connect to MongoDB
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.log(err));
-
-app.get("/", (req, res) => {
-  res.send("Welcome to SamparkCircle API!");
-});
+  .catch((err) => {
+    console.log("MongoDB connection error:", err);
+    process.exit(1);
+  });
 
 // Start server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Test the API at http://localhost:${PORT}/api/test`);
+});

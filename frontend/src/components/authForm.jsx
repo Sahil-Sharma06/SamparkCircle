@@ -13,6 +13,7 @@ const AuthForm = ({ type }) => {
     profileImage: ""
   });
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -23,30 +24,67 @@ const AuthForm = ({ type }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setIsLoading(true);
+    
     try {
-      const BASE_URL = "http://localhost:8000";
-      const url = type === "login" ? `${BASE_URL}/api/auth/login` : `${BASE_URL}/api/auth/signup`;
+      // Use port 3000 for backend
+      const BASE_URL = "http://localhost:3000";
+      const endpoint = type === "login" ? "login" : "signup";
+      const url = `${BASE_URL}/api/auth/${endpoint}`;
       
-      // ✅ Ensure correct request body format
+      console.log("Sending request to:", url);
+      
+      // Prepare the request payload based on the form type
       const payload = type === "signup"
-        ? { name: formData.name, email: formData.email, password: formData.password, role: formData.role }
-        : { email: formData.email, password: formData.password };
+        ? { 
+            name: formData.name, 
+            email: formData.email, 
+            password: formData.password, 
+            role: formData.role 
+          }
+        : { 
+            email: formData.email, 
+            password: formData.password 
+          };
   
+      console.log("Request payload:", payload);
+      
       const response = await axios.post(url, payload, {
         headers: { "Content-Type": "application/json" }
       });
   
       console.log("Response Data:", response.data);
+      
+      // Store user data in Redux
       dispatch(login(response.data));
   
+      // Navigate based on success
       if (type === "login") {
         navigate("/dashboard");
       } else {
+        // Show success message and redirect to login
+        alert("Signup successful! Please login with your credentials.");
         navigate("/login");
       }
     } catch (err) {
-      console.error("Signup/Login Error:", err.response?.data);
-      setError(err.response?.data?.msg || "Something went wrong");
+      console.error("Auth Error:", err);
+      
+      // Handle different types of errors
+      if (err.response) {
+        // The server responded with an error status
+        console.error("Server Error Response:", err.response.data);
+        setError(err.response.data.msg || err.response.data.error || "Server error. Please try again.");
+      } else if (err.request) {
+        // The request was made but no response was received
+        console.error("No response received:", err.request);
+        setError("No response from server. Please check your connection and make sure the backend is running on port 3000.");
+      } else {
+        // Something else caused the error
+        console.error("Error:", err.message);
+        setError(`Connection error: ${err.message}`);
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
   
@@ -56,7 +94,7 @@ const AuthForm = ({ type }) => {
         <h2 className="text-2xl font-semibold mb-4">
           {type === "login" ? "Login" : "Sign Up"}
         </h2>
-        {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+        {error && <p className="text-red-500 text-sm mb-4 p-2 bg-red-50 rounded">{error}</p>}
         <form onSubmit={handleSubmit}>
           {type === "signup" && (
             <input
@@ -65,7 +103,7 @@ const AuthForm = ({ type }) => {
               placeholder="Name"
               value={formData.name}
               onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-md mb-2"
+              className="w-full px-4 py-2 border rounded-md mb-3"
               required
             />
           )}
@@ -75,7 +113,7 @@ const AuthForm = ({ type }) => {
             placeholder="Email"
             value={formData.email}
             onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-md mb-2"
+            className="w-full px-4 py-2 border rounded-md mb-3"
             required
           />
           <input
@@ -84,7 +122,7 @@ const AuthForm = ({ type }) => {
             placeholder="Password"
             value={formData.password}
             onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-md mb-2"
+            className="w-full px-4 py-2 border rounded-md mb-3"
             required
           />
           {type === "signup" && (
@@ -92,7 +130,7 @@ const AuthForm = ({ type }) => {
               name="role"
               value={formData.role}
               onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-md mb-2"
+              className="w-full px-4 py-2 border rounded-md mb-3"
               required
             >
               <option value="ngo">NGO</option>
@@ -107,14 +145,15 @@ const AuthForm = ({ type }) => {
               placeholder="Profile Image URL (optional)"
               value={formData.profileImage}
               onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-md mb-2"
+              className="w-full px-4 py-2 border rounded-md mb-3"
             />
           )}
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600"
+            className={`w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+            disabled={isLoading}
           >
-            {type === "login" ? "Login" : "Sign Up"}
+            {isLoading ? 'Processing...' : (type === "login" ? "Login" : "Sign Up")}
           </button>
         </form>
         <div className="mt-4 text-sm">

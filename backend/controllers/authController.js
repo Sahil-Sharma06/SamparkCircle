@@ -47,7 +47,13 @@ export const signup = async (req, res) => {
 // User Login
 export const login = async (req, res) => {
   try {
+    console.log("Login Request Body:", req.body); // Add debug logging
+    
     const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ msg: "Email and password are required" });
+    }
 
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ msg: "User does not exist" });
@@ -59,6 +65,7 @@ export const login = async (req, res) => {
 
     res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
   } catch (err) {
+    console.error("Login Error:", err.message);
     res.status(500).json({ error: err.message });
   }
 };

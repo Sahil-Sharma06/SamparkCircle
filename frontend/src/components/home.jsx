@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { FaHandsHelping, FaUsers, FaDonate } from "react-icons/fa";
 
-const HomePage = () => {
+const HomeContent = () => {
   const navigate = useNavigate();
 
   return (
@@ -61,4 +61,4 @@ const HomePage = () => {
   );
 };
 
-export default HomePage;
+export default HomeContent;
