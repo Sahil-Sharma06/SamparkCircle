@@ -3,29 +3,40 @@ import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
-    <footer className="py-6 mt-12 text-white bg-blue-600">
-      <div className="flex flex-col items-center justify-between max-w-6xl px-6 mx-auto md:flex-row">
-        {/* Left Section - Branding */}
-        <div className="mb-4 md:mb-0">
-          <h2 className="text-2xl font-bold">SamparkCircle</h2>
-          <p className="text-sm text-gray-200">Connecting NGOs, Volunteers, and Donors</p>
+    <footer className="py-6 text-gray-300 bg-gray-900 bg-opacity-90 backdrop-blur-lg">
+      <div className="flex flex-col items-center justify-between px-6 mx-auto max-w-7xl md:flex-row">
+        
+        {/* Branding & Tagline */}
+        <div className="text-center md:text-left">
+          <h2 className="text-2xl font-semibold text-gray-100">SamparkCircle</h2>
+          <p className="text-sm text-gray-400">Connecting NGOs, Volunteers, and Donors</p>
         </div>
 
-        {/* Middle Section - Links */}
-        <div className="flex space-x-6 text-sm">
-          <Link to="/" className="hover:underline">Home</Link>
-          <Link to="/dashboard" className="hover:underline">Dashboard</Link>
-          <Link to="/signup" className="hover:underline">Sign Up</Link>
-          <Link to="/login" className="hover:underline">Login</Link>
+        {/* Navigation Links */}
+        <div className="flex mt-4 space-x-6 text-sm md:mt-0">
+          <FooterLink to="/" text="Home" />
+          <FooterLink to="/dashboard" text="Dashboard" />
+          <FooterLink to="/signup" text="Sign Up" />
+          <FooterLink to="/login" text="Login" />
         </div>
 
-        {/* Right Section - Copyright */}
-        <div className="text-sm text-gray-200">
+        {/* Copyright */}
+        <div className="mt-4 text-sm text-center text-gray-400 md:mt-0 md:text-right">
           &copy; {new Date().getFullYear()} SamparkCircle. All rights reserved.
         </div>
       </div>
     </footer>
   );
 };
+
+// 🔹 Reusable Footer Link Component
+const FooterLink = ({ to, text }) => (
+  <Link
+    to={to}
+    className="text-gray-400 transition duration-300 hover:text-gray-200"
+  >
+    {text}
+  </Link>
+);
 
 export default Footer;
