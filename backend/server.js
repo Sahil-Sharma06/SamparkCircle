@@ -31,6 +31,8 @@ import donationRoutes from "./routes/donationRoutes.js";
 import eventRoutes from "./routes/eventRoutes.js";
 import ngoRoutes from "./routes/ngoRoutes.js";
 import fundraiserRoutes from "./routes/fundraiserRoutes.js";
+import volunteerOpportunityRoutes from "./routes/volunteerOpportunityRoutes.js";
+import volunteerApplicationRoutes from "./routes/volunteerApplicationRoutes.js";
 
 // Test endpoint that doesn't require a database connection
 app.get("/api/test", (req, res) => {
@@ -48,6 +50,8 @@ app.use("/api/donation", donationRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/fundraisers", fundraiserRoutes);
 app.use("/api/ngos", ngoRoutes);
+app.use("/api/volunteer/opportunities", volunteerOpportunityRoutes);
+app.use("/api/volunteer/applications", volunteerApplicationRoutes);
 
 // Global error handler middleware
 app.use((err, req, res, next) => {
