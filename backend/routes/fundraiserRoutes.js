@@ -1,24 +1,19 @@
 import express from "express";
-import { authenticateUser } from "../controllers/authController.js";
+import { createCampaign, updateCampaign, getCampaign, listCampaigns } from "../controllers/fundraiserController.js";
+import { authenticateUser, authorizeRole } from "../controllers/authController.js";
 
 const router = express.Router();
 
-// Placeholder for fundraiser controllers
-// These will need to be implemented in a fundraiserController.js file
-router.get("/", async (req, res) => {
-  try {
-    res.json({ message: "Fundraisers endpoint - to be implemented" });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+// POST /api/fundraisers - Create a new campaign (restricted to authenticated NGO users)
+router.post("/", authenticateUser, authorizeRole("NGO"), createCampaign);
 
-router.post("/", authenticateUser, async (req, res) => {
-  try {
-    res.json({ message: "Create fundraiser endpoint - to be implemented" });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+// PUT /api/fundraisers/:campaignId - Update an existing campaign (restricted to the creator)
+router.put("/:campaignId", authenticateUser, authorizeRole("NGO"), updateCampaign);
+
+// GET /api/fundraisers/:campaignId - Get details of a specific campaign (public)
+router.get("/:campaignId", getCampaign);
+
+// GET /api/fundraisers - List all campaigns (public)
+router.get("/", listCampaigns);
 
 export default router;

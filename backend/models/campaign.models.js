@@ -1,15 +1,15 @@
 import mongoose from "mongoose";
 
-const eventSchema = new mongoose.Schema({
+const campaignSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String, required: true },
-  location: { type: String, required: true },
-  eventDate: { type: Date, required: true },
+  goal: { type: Number, required: true },
+  amountRaised: { type: Number, default: 0 },
   image: { type: String, default: "" },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   createdAt: { type: Date, default: Date.now },
 });
 
-const Event = mongoose.model("Event", eventSchema);
+const Campaign = mongoose.model("Campaign", campaignSchema);
 
-export default Event;
+export default Campaign;

@@ -1,24 +1,22 @@
 import express from "express";
-import { authenticateUser } from "../controllers/authController.js";
+import { createEvent, updateEvent, deleteEvent, getEvent, listEvents } from "../controllers/eventsController.js";
+import { authenticateUser, authorizeRole } from "../controllers/authController.js";
 
 const router = express.Router();
 
-// Placeholder for event controllers
-// These will need to be implemented in an eventController.js file
-router.get("/", async (req, res) => {
-  try {
-    res.json({ message: "Events endpoint - to be implemented" });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+// POST /api/events - Create a new event (restricted to authenticated NGO users)
+router.post("/", authenticateUser, authorizeRole("NGO"), createEvent);
 
-router.post("/", authenticateUser, async (req, res) => {
-  try {
-    res.json({ message: "Create event endpoint - to be implemented" });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+// PUT /api/events/:eventId - Update an event (restricted to the event creator)
+router.put("/:eventId", authenticateUser, authorizeRole("NGO"), updateEvent);
+
+// DELETE /api/events/:eventId - Delete an event (restricted to the event creator)
+router.delete("/:eventId", authenticateUser, authorizeRole("NGO"), deleteEvent);
+
+// GET /api/events/:eventId - Get details of a specific event (public)
+router.get("/:eventId", getEvent);
+
+// GET /api/events - List all events (public)
+router.get("/", listEvents);
 
 export default router;

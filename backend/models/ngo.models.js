@@ -12,6 +12,7 @@ const NGOSchema = new mongoose.Schema({
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   createdAt: { type: Date, default: Date.now },
 });
+
 const NGO = mongoose.model("NGO", NGOSchema);
 
 export default NGO;

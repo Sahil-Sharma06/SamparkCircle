@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
+
 dotenv.config();
 
 // Validate essential environment variables
@@ -14,23 +15,24 @@ if (missingEnvVars.length > 0) {
 
 const app = express();
 
-// More permissive CORS for development
+// Permissive CORS for development
 app.use(cors({
   origin: '*', // Allow all origins in development
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
+// Middleware to parse JSON bodies
 app.use(express.json());
 
 // Import routes
 import authRoutes from "./routes/authRoutes.js";
 import donationRoutes from "./routes/donationRoutes.js";
 import eventRoutes from "./routes/eventRoutes.js";
-import fundraiserRoutes from "./routes/fundraiserRoutes.js";
 import ngoRoutes from "./routes/ngoRoutes.js";
+import fundraiserRoutes from "./routes/fundraiserRoutes.js";
 
-// Test endpoint that doesn't require database connection
+// Test endpoint that doesn't require a database connection
 app.get("/api/test", (req, res) => {
   res.json({ message: "API is working!", timestamp: new Date().toISOString() });
 });
