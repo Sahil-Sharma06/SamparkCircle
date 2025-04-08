@@ -33,6 +33,8 @@ import ngoRoutes from "./routes/ngoRoutes.js";
 import fundraiserRoutes from "./routes/fundraiserRoutes.js";
 import volunteerOpportunityRoutes from "./routes/volunteerOpportunityRoutes.js";
 import volunteerApplicationRoutes from "./routes/volunteerApplicationRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
+import adminAuthRoutes from "./routes/adminAuthRoutes.js";
 
 // Test endpoint that doesn't require a database connection
 app.get("/api/test", (req, res) => {
@@ -52,6 +54,8 @@ app.use("/api/fundraisers", fundraiserRoutes);
 app.use("/api/ngos", ngoRoutes);
 app.use("/api/volunteer/opportunities", volunteerOpportunityRoutes);
 app.use("/api/volunteer/applications", volunteerApplicationRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/admin/auth", adminAuthRoutes);
 
 // Global error handler middleware
 app.use((err, req, res, next) => {
