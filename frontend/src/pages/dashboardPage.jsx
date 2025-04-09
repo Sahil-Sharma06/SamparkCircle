@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { FaUsers, FaHandHoldingHeart, FaCalendarAlt } from "react-icons/fa";
+import { FaUsers, FaHandHoldingHeart, FaCalendarAlt, FaUserEdit, FaChartBar, FaDonate } from "react-icons/fa";
 
 const DashboardPage = () => {
   const { user } = useSelector((state) => state.auth);
@@ -21,6 +21,7 @@ const DashboardPage = () => {
   }
 
   const role = user?.role || "Unknown";
+  const lowerRole = role.toLowerCase();
 
   return (
     <div className="flex flex-col items-center min-h-screen p-8 text-gray-200 bg-gray-900">
@@ -33,25 +34,55 @@ const DashboardPage = () => {
         </p>
       </div>
       <div className="grid w-full max-w-5xl grid-cols-1 gap-8 mt-12 md:grid-cols-3">
-        {role.toLowerCase() === "ngo" && (
+        {lowerRole === "ngo" && (
+          <>
+            <DashboardCard
+              icon={<FaUserEdit className="text-5xl" />}
+              title="Manage Profile"
+              description="View and update your NGO profile."
+              buttonText="Edit Profile"
+              buttonAction={() => navigate("/dashboard/profile")}
+            />
+            <DashboardCard
+              icon={<FaHandHoldingHeart className="text-5xl" />}
+              title="Manage Fundraisers"
+              description="Create and track your fundraising campaigns."
+              buttonText="Create Fundraiser"
+              buttonAction={() => navigate("/dashboard/fundraisers/create")}
+            />
+            <DashboardCard
+              icon={<FaDonate className="text-5xl" />}
+              title="Donation History"
+              description="View donations made to your campaigns."
+              buttonText="View Donations"
+              buttonAction={() => navigate("/dashboard/donations")}
+            />
+            <DashboardCard
+              icon={<FaChartBar className="text-5xl" />}
+              title="Analytics"
+              description="See insights and performance metrics."
+              buttonText="View Analytics"
+              buttonAction={() => navigate("/dashboard/analytics")}
+            />
+            <DashboardCard
+              icon={<FaUsers className="text-5xl" />}
+              title="Volunteer Opportunities"
+              description="Manage volunteer postings and applications."
+              buttonText="Manage Opportunities"
+              buttonAction={() => navigate("/dashboard/volunteer-opportunities")}
+            />
+          </>
+        )}
+        {lowerRole === "donor" && (
           <DashboardCard
             icon={<FaHandHoldingHeart className="text-5xl" />}
-            title="Manage Fundraisers"
-            description="Create and track your fundraising campaigns."
-            buttonText="Create Fundraiser"
-            buttonAction={() => navigate("/dashboard/fundraisers/create")}
-          />
-        )}
-        {role.toLowerCase() === "donor" && (
-          <DashboardCard
-            icon={<FaUsers className="text-5xl" />}
             title="Browse Fundraisers"
             description="Support causes that matter to you."
             buttonText="Browse Fundraisers"
             buttonAction={() => navigate("/dashboard/fundraisers")}
           />
         )}
-        {role.toLowerCase() === "volunteer" && (
+        {lowerRole === "volunteer" && (
           <DashboardCard
             icon={<FaCalendarAlt className="text-5xl" />}
             title="Join Events"

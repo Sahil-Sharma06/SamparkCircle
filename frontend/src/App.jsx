@@ -5,6 +5,8 @@ import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import DashboardPage from "./pages/DashboardPage";
 import FundraisersPage from "./pages/fundraiserPage";
+import CreateFundraiserPage from "./pages/CreateFundraiserPage";
+import NgoProfilePage from "./pages/NgoProfilePage"; // NGO Profile Page
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFoundPage from "./pages/NotFoundPage";
 import Navbar from "./components/navbar";
@@ -17,27 +19,33 @@ const App = () => {
         <Navbar />
         <main className="flex-grow">
           <Routes>
-            {/* 🌍 Public Routes */}
+            {/* Public Routes */}
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
-            {/* 🔒 Protected Routes */}
+
+            {/* Protected Routes */}
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<DashboardPage />} />
-              {/* 🏢 NGO Routes */}
+
+              {/* NGO Routes */}
               <Route element={<ProtectedRoute allowedRoles={["ngo"]} />}>
-                <Route path="/dashboard/fundraisers/create" element={<div>Create Fundraiser Page (To be implemented)</div>} />
+                <Route path="/dashboard/profile" element={<NgoProfilePage />} />
+                <Route path="/dashboard/fundraisers/create" element={<CreateFundraiserPage />} />
               </Route>
-              {/* 👥 Volunteer Routes */}
+
+              {/* Volunteer Routes */}
               <Route element={<ProtectedRoute allowedRoles={["volunteer"]} />}>
                 <Route path="/dashboard/events" element={<div>Events Page (To be implemented)</div>} />
               </Route>
-              {/* 💰 Donor Routes */}
+
+              {/* Donor Routes */}
               <Route element={<ProtectedRoute allowedRoles={["donor"]} />}>
                 <Route path="/dashboard/fundraisers" element={<FundraisersPage />} />
               </Route>
             </Route>
-            {/* 🚧 404 Page */}
+
+            {/* 404 Page */}
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>

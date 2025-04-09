@@ -1,16 +1,19 @@
-// API configuration
-const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:5000',
-  ENDPOINTS: {
-    AUTH: {
-      LOGIN: '/api/auth/login',
-      SIGNUP: '/api/auth/signup',
-    },
-    DONATIONS: '/api/donation',
-    EVENTS: '/api/events',
-    FUNDRAISERS: '/api/fundraisers',
-    NGOS: '/api/ngos',
-  }
-};
+import axios from "axios";
 
-export default API_CONFIG; 
+const api = axios.create({
+  baseURL: "http://localhost:3000/api",
+});
+
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("authToken"); // use your consistent key
+    console.log("Axios interceptor token:", token);
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+export default api;

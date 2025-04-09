@@ -16,13 +16,14 @@ export const authenticateUser = (req, res, next) => {
 
   try {
     const verified = jwt.verify(token, process.env.JWT_SECRET);
-    // Attach the decoded token payload (e.g., id and role) to req.user
     req.user = verified;
+    console.log("Authenticated user:", req.user);
     next();
   } catch (err) {
     console.error("Token verification error:", err);
     return res.status(400).json({ msg: "Invalid token." });
   }
+  
 };
 
 // Middleware to authorize a specific role (e.g., "NGO", "Admin", etc.)
