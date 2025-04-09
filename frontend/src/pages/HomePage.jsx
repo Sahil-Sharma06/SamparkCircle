@@ -1,12 +1,9 @@
 import React from "react";
-import Navbar from "../components/navbar";
-import HomeContent from "../components/home";
-import Footer from "../components/footer";
 
 const HomePage = () => {
   return (
-    <div>
-      <HomeContent />
+    <div className="flex items-center justify-center min-h-screen">
+      <h1 className="text-4xl text-white">Welcome to SamparkCircle</h1>
     </div>
   );
 };

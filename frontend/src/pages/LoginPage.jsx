@@ -1,14 +1,8 @@
 import React from "react";
 import AuthForm from "../components/authForm";
-import ConnectionTest from "../components/ConnectionTest";
 
 const LoginPage = () => {
-  return (
-    <div>
-      <AuthForm type="login" />
-      {/* <ConnectionTest /> */}
-    </div>
-  );
+  return <AuthForm type="login" />;
 };
 
 export default LoginPage;

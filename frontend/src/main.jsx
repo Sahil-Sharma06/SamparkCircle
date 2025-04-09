@@ -1,19 +1,13 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { Provider } from "react-redux";
-import { store } from "./store";
-import { restoreAuth } from "./store/authSlice";
 import App from "./App";
-import '../src/index.css'
-
-// Restore auth state from localStorage if available
-store.dispatch(restoreAuth());
+import { Provider } from "react-redux";
+import store from "./store/index.js"; // Ensure you export your Redux store from src/store/index.js or similar
+import "./index.css"; // TailwindCSS or your own styles
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <Provider store={store}>
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>
+    <App />
   </Provider>
 );

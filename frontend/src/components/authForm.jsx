@@ -120,9 +120,10 @@ const AuthForm = ({ type }) => {
               className="w-full px-4 py-2 mb-3 text-white bg-gray-800 border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
               required
             >
-              <option value="ngo">NGO</option>
-              <option value="volunteer">Volunteer</option>
-              <option value="donor">Donor</option>
+              <option value="">Select role</option>
+              <option value="NGO">NGO</option>
+              <option value="Volunteer">Volunteer</option>
+              <option value="Donor">Donor</option>
             </select>
           )}
           {type === "signup" && (
