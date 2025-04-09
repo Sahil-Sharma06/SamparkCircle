@@ -27,7 +27,6 @@ app.use(express.json());
 
 // Import routes
 import authRoutes from "./routes/authRoutes.js";
-import donationRoutes from "./routes/donationRoutes.js";
 import eventRoutes from "./routes/eventRoutes.js";
 import ngoRoutes from "./routes/ngoRoutes.js";
 import fundraiserRoutes from "./routes/fundraiserRoutes.js";
@@ -35,6 +34,11 @@ import volunteerOpportunityRoutes from "./routes/volunteerOpportunityRoutes.js";
 import volunteerApplicationRoutes from "./routes/volunteerApplicationRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import adminAuthRoutes from "./routes/adminAuthRoutes.js";
+import donationRoutes from "./routes/donationRoutes.js";
+import analyticsRoutes from "./routes/analyticsRoutes.js";
+
+
+
 
 // Test endpoint that doesn't require a database connection
 app.get("/api/test", (req, res) => {
@@ -48,7 +52,6 @@ app.get("/", (req, res) => {
 
 // Use routes
 app.use("/api/auth", authRoutes);
-app.use("/api/donation", donationRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/fundraisers", fundraiserRoutes);
 app.use("/api/ngos", ngoRoutes);
@@ -56,6 +59,8 @@ app.use("/api/volunteer/opportunities", volunteerOpportunityRoutes);
 app.use("/api/volunteer/applications", volunteerApplicationRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/admin/auth", adminAuthRoutes);
+app.use("/api/donation", donationRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 // Global error handler middleware
 app.use((err, req, res, next) => {

@@ -1,41 +1,47 @@
 import Donation from "../models/donations.models.js";
-import Fundraiser from "../models/campaign.models.js";
-import User from "../models/User.js";
 
-export const createDonation = async (req, res) => {
-    try {
-        const { userId, fundraiserId, amount, transactionId } = req.body;
-
-        // Validate input
-        if (!userId || !fundraiserId || !amount || !transactionId) {
-            return res.status(400).json({ error: "All fields are required." });
-        }
-
-        // Check if user and fundraiser exist
-        const user = await User.findById(userId);
-        const fundraiser = await Fundraiser.findById(fundraiserId);
-
-        if (!user || !fundraiser) {
-            return res.status(404).json({ error: "User or Fundraiser not found." });
-        }
-
-        // Create a new donation
-        const donation = new Donation({
-            user: user._id,
-            fundraiser: fundraiser._id,
-            amount,
-            transactionId,
-            createdAt: new Date()
-        });
-
-        // Save donation to database
-        await donation.save();
-
-        res.status(201).json({
-            message: "Donation successful!",
-            donation
-        });
-    } catch (error) {
-        res.status(500).json({ error: "Server error", details: error.message });
+/**
+ * Process a donation.
+ * This endpoint simulates donation processing—normally you would integrate a payment gateway like Razorpay or Stripe.
+ * Only users with the "Donor" role can donate.
+ */
+export const processDonation = async (req, res) => {
+  try {
+    const { ngoId, campaignId, amount } = req.body;
+    if (!amount || !ngoId) {
+      return res.status(400).json({ message: "Amount and NGO id are required" });
     }
+    
+    // Simulate a processed payment
+    const donation = new Donation({
+      donor: req.user.id,
+      ngo: ngoId,
+      campaign: campaignId, // Optional, if provided
+      amount,
+      transactionId: "TXN" + Math.floor(Math.random() * 1000000),
+      status: "Completed",
+    });
+    await donation.save();
+    
+    return res.status(201).json({
+      message: "Donation processed successfully",
+      donation,
+    });
+  } catch (error) {
+    console.error("Error processing donation:", error);
+    return res.status(500).json({ error: "Server error while processing donation" });
+  }
+};
+
+/**
+ * Get the donation history for the logged-in donor.
+ */
+export const getDonationHistory = async (req, res) => {
+  try {
+    const donations = await Donation.find({ donor: req.user.id }).populate("ngo", "name email");
+    return res.status(200).json({ donations });
+  } catch (error) {
+    console.error("Error fetching donation history:", error);
+    return res.status(500).json({ error: "Server error while fetching donation history" });
+  }
 };
