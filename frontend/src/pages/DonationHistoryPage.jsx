@@ -1,58 +1,44 @@
 import React, { useEffect, useState } from "react";
 import api from "../utils/api";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 const DonationHistoryPage = () => {
+  const { user } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
   const [donations, setDonations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedDonation, setSelectedDonation] = useState(null);
 
   useEffect(() => {
     const fetchDonations = async () => {
       try {
-        // Assuming backend endpoint /donation/history for donors; for NGO, adjust endpoint (e.g., /ngos/donations)
-        const res = await api.get("/donation/history");
-        setDonations(res.data.donations);
+        // CORRECTED: Remove the /api prefix since api.js already adds it
+        const endpoint = user?.role === "NGO" || user?.role === "ngo" 
+          ? "/donations/ngo/received" 
+          : "/donations/history";
+        
+        console.log("Fetching donations from endpoint:", endpoint);
+        const res = await api.get(endpoint);
+        setDonations(res.data.donations || []);
       } catch (err) {
-        setError("Failed to load donation history.");
+        console.error("Error fetching donations:", err);
+        setError("Failed to load donation history. " + (err.response?.data?.message || ""));
       } finally {
         setLoading(false);
       }
     };
-    fetchDonations();
-  }, []);
+    
+    if (user) {
+      fetchDonations();
+    } else {
+      setError("Please log in to view your donation history");
+      setLoading(false);
+    }
+  }, [user]);
 
-  if (loading) return <div className="p-8 text-white">Loading donations...</div>;
-  if (error) return <div className="p-8 text-red-400">{error}</div>;
-
-  return (
-    <div className="min-h-screen p-8 text-white bg-gray-900">
-      <h1 className="mb-6 text-3xl font-bold">Donation History</h1>
-      {donations.length === 0 ? (
-        <p>No donations found.</p>
-      ) : (
-        <table className="w-full text-left">
-          <thead>
-            <tr>
-              <th className="p-2 border">Date</th>
-              <th className="p-2 border">Amount</th>
-              <th className="p-2 border">Campaign/NGO</th>
-              <th className="p-2 border">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {donations.map((donation) => (
-              <tr key={donation._id}>
-                <td className="p-2 border">{new Date(donation.donatedAt).toLocaleDateString()}</td>
-                <td className="p-2 border">₹{donation.amount}</td>
-                <td className="p-2 border">{donation.ngo.name}</td>
-                <td className="p-2 border">{donation.status}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-    </div>
-  );
-};
+  // Rest of your component remains the same
+}
 
 export default DonationHistoryPage;

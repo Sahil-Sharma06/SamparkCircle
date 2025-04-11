@@ -34,9 +34,10 @@ import volunteerOpportunityRoutes from "./routes/volunteerOpportunityRoutes.js";
 import volunteerApplicationRoutes from "./routes/volunteerApplicationRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import adminAuthRoutes from "./routes/adminAuthRoutes.js";
-import donationRoutes from "./routes/donationRoutes.js";
 import analyticsRoutes from "./routes/analyticsRoutes.js";
+import donationRoutes from "./routes/donationRoutes.js";
 
+// ... other imports and setup ...
 
 
 
@@ -59,7 +60,7 @@ app.use("/api/volunteer/opportunities", volunteerOpportunityRoutes);
 app.use("/api/volunteer/applications", volunteerApplicationRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/admin/auth", adminAuthRoutes);
-app.use("/api/donation", donationRoutes);
+app.use("/api/donations", donationRoutes);
 app.use("/api/analytics", analyticsRoutes);
 
 // Global error handler middleware

@@ -8,7 +8,24 @@ import NGO from "../models/ngo.models.js";
 export const registerNGO = async (req, res) => {
     try {
       const { name, email, description, address, website, phone, logo } = req.body;
-      // Use req.user.id if your JWT payload is signed with { id: user._id, role: user.role }
+      
+      // Check if this user already has an NGO profile
+      const existingNGO = await NGO.findOne({ createdBy: req.user.id });
+      if (existingNGO) {
+        return res.status(409).json({
+          error: "You already have an NGO profile. Please update your existing profile instead.",
+        });
+      }
+      
+      // Check if email is already in use
+      const emailExists = await NGO.findOne({ email });
+      if (emailExists) {
+        return res.status(409).json({
+          error: "An NGO with this email already exists. Please use a different email.",
+        });
+      }
+      
+      // Create new NGO
       const newNGO = new NGO({
         name,
         email,
@@ -28,13 +45,20 @@ export const registerNGO = async (req, res) => {
       });
     } catch (error) {
       console.error("Error registering NGO:", error);
+      
+      // Check specifically for duplicate key error
+      if (error.code === 11000 && error.keyPattern && error.keyPattern.email) {
+        return res.status(409).json({
+          error: "An NGO with this email already exists. Please use a different email.",
+        });
+      }
+      
       return res.status(500).json({
         error: "Server error while registering NGO",
       });
     }
-  };
+};
   
-
 /**
  * Update an existing NGO profile.
  * Only the creator of the NGO (authenticated user) may update the profile.
@@ -50,13 +74,23 @@ export const updateNGO = async (req, res) => {
       }
   
       // Check if the current user is the owner of the NGO profile
-      // NOTE: Use req.user.id instead of req.user._id
       if (ngo.createdBy.toString() !== req.user.id.toString()) {
         return res.status(403).json({ message: "Not authorized to update this NGO" });
       }
   
       // Define the fields that are allowed to be updated
       const allowedUpdates = ["name", "email", "description", "address", "website", "phone", "logo"];
+      
+      // If email is being updated, check if it's already in use
+      if (req.body.email && req.body.email !== ngo.email) {
+        const existingNGO = await NGO.findOne({ email: req.body.email });
+        if (existingNGO) {
+          return res.status(409).json({ 
+            error: "This email is already in use by another NGO. Please use a different email." 
+          });
+        }
+      }
+      
       allowedUpdates.forEach((field) => {
         if (req.body[field] !== undefined) {
           ngo[field] = req.body[field];
@@ -71,15 +105,22 @@ export const updateNGO = async (req, res) => {
       });
     } catch (error) {
       console.error("Error updating NGO:", error);
+      
+      // Check for duplicate key error
+      if (error.code === 11000 && error.keyPattern && error.keyPattern.email) {
+        return res.status(409).json({
+          error: "An NGO with this email already exists. Please use a different email.",
+        });
+      }
+      
       return res.status(500).json({
         error: "Server error while updating NGO",
       });
     }
 };
   
-
 /**
- * Retrieve the details of a single NGO.
+ * Retrieve the details of a single NGO by ID.
  */
 export const getNGO = async (req, res) => {
   try {
@@ -91,6 +132,25 @@ export const getNGO = async (req, res) => {
     return res.status(200).json({ ngo });
   } catch (error) {
     console.error("Error fetching NGO:", error);
+    return res.status(500).json({ error: "Server error while fetching NGO" });
+  }
+};
+
+/**
+ * Find NGO by user ID (createdBy field)
+ */
+export const getNGOByUserId = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const ngo = await NGO.findOne({ createdBy: userId });
+    
+    if (!ngo) {
+      return res.status(404).json({ message: "NGO not found for this user" });
+    }
+    
+    return res.status(200).json({ ngo });
+  } catch (error) {
+    console.error("Error fetching NGO by user ID:", error);
     return res.status(500).json({ error: "Server error while fetching NGO" });
   }
 };

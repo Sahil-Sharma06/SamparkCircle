@@ -7,6 +7,8 @@ import DashboardPage from "./pages/DashboardPage";
 import FundraisersPage from "./pages/fundraiserPage";
 import CreateFundraiserPage from "./pages/CreateFundraiserPage";
 import NgoProfilePage from "./pages/NgoProfilePage"; // NGO Profile Page
+import CreateNgoProfilePage from "./pages/CreateNgoProfilePage"; // Import the new Create Profile Page
+import DonationHistoryPage from "./pages/DonationHistoryPage"; // Import the Donation History Page
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFoundPage from "./pages/NotFoundPage";
 import Navbar from "./components/navbar";
@@ -31,7 +33,9 @@ const App = () => {
               {/* NGO Routes */}
               <Route element={<ProtectedRoute allowedRoles={["ngo"]} />}>
                 <Route path="/dashboard/profile" element={<NgoProfilePage />} />
+                <Route path="/dashboard/profile/create" element={<CreateNgoProfilePage />} />
                 <Route path="/dashboard/fundraisers/create" element={<CreateFundraiserPage />} />
+                <Route path="/dashboard/donations" element={<DonationHistoryPage />} /> {/* NGO donation history */}
               </Route>
 
               {/* Volunteer Routes */}
@@ -42,6 +46,7 @@ const App = () => {
               {/* Donor Routes */}
               <Route element={<ProtectedRoute allowedRoles={["donor"]} />}>
                 <Route path="/dashboard/fundraisers" element={<FundraisersPage />} />
+                <Route path="/dashboard/donations" element={<DonationHistoryPage />} /> {/* Donor donation history */}
               </Route>
             </Route>
 
