@@ -1,26 +1,39 @@
-import React from "react";
-import { Navigate, Outlet } from "react-router-dom";
-import { useSelector } from "react-redux";
+// src/components/ProtectedRoute.jsx
+import React from 'react';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
-const ProtectedRoute = ({ allowedRoles = [] }) => {
-  const { user, token } = useSelector((state) => state.auth);
+/**
+ * ProtectedRoute component that checks if the user is authenticated
+ * and optionally checks if they have the required role(s)
+ * 
+ * @param {Object} props - Component props
+ * @param {Array} props.allowedRoles - Optional array of roles that are allowed to access the route
+ * @param {ReactNode} props.children - Optional children to render
+ */
+const ProtectedRoute = ({ allowedRoles, children }) => {
+  const location = useLocation();
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
   
-  // Check if user is authenticated
-  if (!user || !token) {
-    return <Navigate to="/login" replace />;
+  // If not authenticated, redirect to login
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
   
-  // If no specific roles are required, allow access to any authenticated user
-  if (allowedRoles.length === 0) {
-    return <Outlet />;
+  // If allowedRoles is provided, check if user has any of the allowed roles
+  if (allowedRoles && allowedRoles.length > 0) {
+    const hasAllowedRole = allowedRoles.some(role => 
+      user.role?.toLowerCase() === role.toLowerCase()
+    );
+    
+    if (!hasAllowedRole) {
+      // Redirect to dashboard if user doesn't have required role
+      return <Navigate to="/dashboard" replace />;
+    }
   }
   
-  // Check if user has required role (case-insensitive check)
-  if (!allowedRoles.some(role => user.role.toLowerCase() === role.toLowerCase())) {
-    return <Navigate to="/dashboard" replace />;
-  }
-  
-  return <Outlet />;
+  // If there are children, render them, otherwise render the Outlet
+  return children ? children : <Outlet />;
 };
 
 export default ProtectedRoute;

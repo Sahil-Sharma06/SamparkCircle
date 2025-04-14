@@ -1,19 +1,30 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import DashboardPage from "./pages/DashboardPage";
 import FundraisersPage from "./pages/fundraiserPage";
 import CreateFundraiserPage from "./pages/CreateFundraiserPage";
-import NgoProfilePage from "./pages/NgoProfilePage"; // NGO Profile Page
-import CreateNgoProfilePage from "./pages/CreateNgoProfilePage"; // Import the new Create Profile Page
-import DonationHistoryPage from "./pages/DonationHistoryPage"; // Import the Donation History Page
-import AnalyticsPage from "./pages/AnalyticsPage"; // Import the new Analytics Page
+import NgoProfilePage from "./pages/NgoProfilePage";
+import CreateNgoProfilePage from "./pages/CreateNgoProfilePage";
+import DonationHistoryPage from "./pages/DonationHistoryPage";
+import AnalyticsPage from "./pages/AnalyticsPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFoundPage from "./pages/NotFoundPage";
 import Navbar from "./components/navbar";
 import Footer from "./components/footer";
+
+// Volunteer-related pages
+import VolunteerOpportunityPage from "./pages/VolunteerOpportunityPage";
+
+// Placeholder components (to be implemented)
+const OpportunityDetailPage = () => <div>Opportunity Detail Page</div>;
+const CreateOpportunityPage = () => <div>Create Opportunity Page</div>;
+const EditOpportunityPage = () => <div>Edit Opportunity Page</div>;
+const ApplicationsListPage = () => <div>Applications List Page</div>;
+const ApplicationDetailPage = () => <div>Application Detail Page</div>;
 
 const App = () => {
   return (
@@ -36,28 +47,36 @@ const App = () => {
                 <Route path="/dashboard/profile" element={<NgoProfilePage />} />
                 <Route path="/dashboard/profile/create" element={<CreateNgoProfilePage />} />
                 <Route path="/dashboard/fundraisers/create" element={<CreateFundraiserPage />} />
-                <Route path="/dashboard/donations" element={<DonationHistoryPage />} /> {/* NGO donation history */}
-                <Route path="/dashboard/analytics" element={<AnalyticsPage />} /> {/* NGO analytics */}
+                <Route path="/dashboard/donations" element={<DonationHistoryPage />} />
+                <Route path="/dashboard/analytics" element={<AnalyticsPage />} />
+
+                {/* NGO Volunteer Management */}
+                <Route path="/dashboard/volunteer-opportunities/create" element={<CreateOpportunityPage />} />
+                <Route path="/dashboard/volunteer-opportunities/:opportunityId/edit" element={<EditOpportunityPage />} />
+                <Route path="/dashboard/volunteer-opportunities/:opportunityId/applications" element={<ApplicationsListPage />} />
+                <Route path="/dashboard/applications/:applicationId" element={<ApplicationDetailPage />} />
               </Route>
 
               {/* Volunteer Routes */}
-              <Route element={<ProtectedRoute allowedRoles={["volunteer"]} />}>
+              <Route element={<ProtectedRoute allowedRoles={["ngo"]} />}>
+                <Route path="/dashboard/volunteer-opportunities" element={<VolunteerOpportunityPage />} />
+                <Route path="/dashboard/volunteer-opportunities/:opportunityId" element={<OpportunityDetailPage />} />
                 <Route path="/dashboard/events" element={<div>Events Page (To be implemented)</div>} />
               </Route>
 
               {/* Donor Routes */}
               <Route element={<ProtectedRoute allowedRoles={["donor"]} />}>
                 <Route path="/dashboard/fundraisers" element={<FundraisersPage />} />
-                <Route path="/dashboard/donations" element={<DonationHistoryPage />} /> {/* Donor donation history */}
+                <Route path="/dashboard/donations" element={<DonationHistoryPage />} />
               </Route>
 
               {/* Admin Routes */}
               <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
-                <Route path="/dashboard/admin/analytics" element={<AnalyticsPage />} /> {/* Admin analytics */}
+                <Route path="/dashboard/admin/analytics" element={<AnalyticsPage />} />
               </Route>
             </Route>
 
-            {/* 404 Page */}
+            {/* 404 Fallback */}
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>
