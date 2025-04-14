@@ -23,19 +23,34 @@ export const authenticateUser = (req, res, next) => {
     console.error("Token verification error:", err);
     return res.status(400).json({ msg: "Invalid token." });
   }
-  
 };
 
-// Middleware to authorize a specific role (e.g., "NGO", "Admin", etc.)
-export const authorizeRole = (role) => {
+// Middleware to authorize a specific role or array of roles (e.g., "NGO", "Admin", etc.)
+export const authorizeRole = (roles) => {
   return (req, res, next) => {
     // Ensure authenticateUser has set req.user
     if (!req.user) {
       return res.status(401).json({ msg: "User not authenticated." });
     }
-    if (req.user.role !== role) {
-      return res.status(403).json({ msg: "Forbidden: Insufficient permissions." });
+    
+    // Convert roles to array if it's a string
+    const allowedRoles = Array.isArray(roles) ? roles : [roles];
+    
+    // Get user role (as string to be safe)
+    const userRole = req.user.role ? req.user.role.toString() : "";
+    
+    // Check if user's role is in the allowed roles (case-insensitive)
+    const hasPermission = allowedRoles.some(role => 
+      userRole.toLowerCase() === role.toLowerCase()
+    );
+    
+    if (!hasPermission) {
+      return res.status(403).json({ 
+        msg: "Forbidden: Insufficient permissions.",
+        debug: { userRole, allowedRoles }
+      });
     }
+    
     next();
   };
 };

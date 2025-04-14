@@ -12,10 +12,14 @@ const DonationHistoryPage = () => {
   const [selectedDonation, setSelectedDonation] = useState(null);
 
   useEffect(() => {
+    // Debug: Log user information
+    console.log("Current user:", user);
+    console.log("User role:", user?.role);
+    
     const fetchDonations = async () => {
       try {
-        // CORRECTED: Remove the /api prefix since api.js already adds it
-        const endpoint = user?.role === "NGO" || user?.role === "ngo" 
+        // Always use lowercase roles to match what's in the database
+        const endpoint = user?.role?.toLowerCase() === "ngo" 
           ? "/donations/ngo/received" 
           : "/donations/history";
         
@@ -38,7 +42,45 @@ const DonationHistoryPage = () => {
     }
   }, [user]);
 
-  // Rest of your component remains the same
-}
+  if (loading) {
+    return <div className="container mt-5">Loading...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="container mt-5">
+        <div className="alert alert-danger">
+          <p>{error}</p>
+          <p>User role: {user?.role || "Not logged in"}</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mt-5">
+      <h2>Donation History</h2>
+      
+      <div className="mt-4 list-group">
+        {donations.length > 0 ? (
+          donations.map(donation => (
+            <div key={donation._id} className="list-group-item">
+              <h5>
+                {user?.role?.toLowerCase() === "ngo" 
+                  ? `From: ${donation.donor?.name || 'Anonymous'}` 
+                  : `To: ${donation.ngo?.name || 'Unknown NGO'}`}
+              </h5>
+              <p>Amount: ₹{donation.amount}</p>
+              <p>Date: {new Date(donation.donatedAt).toLocaleDateString()}</p>
+              <p>Status: {donation.status}</p>
+            </div>
+          ))
+        ) : (
+          <p>No donations found.</p>
+        )}
+      </div>
+    </div>
+  );
+};
 
 export default DonationHistoryPage;

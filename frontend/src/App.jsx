@@ -8,7 +8,7 @@ import SignupPage from "./pages/SignupPage";
 import DashboardPage from "./pages/DashboardPage";
 import FundraisersPage from "./pages/fundraiserPage";
 import CreateFundraiserPage from "./pages/CreateFundraiserPage";
-import EditFundraiserPage from "./pages/EditFundraiserPage"; // Import the new EditFundraiserPage
+import EditFundraiserPage from "./pages/EditFundraiserPage";
 import ManageFundraisersPage from "./pages/ManageFundraisersPage";
 import NgoProfilePage from "./pages/NgoProfilePage";
 import CreateNgoProfilePage from "./pages/CreateNgoProfilePage";
@@ -22,12 +22,11 @@ import Footer from "./components/footer";
 // Volunteer-related Pages
 import VolunteerOpportunityPage from "./pages/VolunteerOpportunityPage";
 import CreateOpportunityPage from "./pages/CreateOpportunityPage";
+import ViewApplicationsPage from "./pages/ViewApplicationsPage";
+import ApplicationDetailPage from "./pages/ApplicationDetailPage";
 
-// Placeholder components for future pages
-const OpportunityDetailPage = () => <div>Opportunity Detail Page</div>;
+// Import the edit opportunity page when it's created
 const EditOpportunityPage = () => <div>Edit Opportunity Page</div>;
-const ApplicationsListPage = () => <div>Applications List Page</div>;
-const ApplicationDetailPage = () => <div>Application Detail Page</div>;
 
 const App = () => {
   return (
@@ -51,19 +50,26 @@ const App = () => {
                 <Route path="/dashboard/profile/create" element={<CreateNgoProfilePage />} />
                 <Route path="/dashboard/fundraisers/create" element={<CreateFundraiserPage />} />
                 <Route path="/dashboard/fundraisers/manage" element={<ManageFundraisersPage />} />
-                <Route path="/dashboard/fundraisers/:campaignId/edit" element={<EditFundraiserPage />} /> {/* New Edit Route */}
+                <Route path="/dashboard/fundraisers/:campaignId/edit" element={<EditFundraiserPage />} />
                 <Route path="/dashboard/donations" element={<DonationHistoryPage />} />
                 <Route path="/dashboard/analytics" element={<AnalyticsPage />} />
+                
+                {/* Volunteer Opportunity Management */}
                 <Route path="/dashboard/volunteer-opportunities" element={<VolunteerOpportunityPage />} />
                 <Route path="/dashboard/volunteer-opportunities/create" element={<CreateOpportunityPage />} />
                 <Route path="/dashboard/volunteer-opportunities/:opportunityId/edit" element={<EditOpportunityPage />} />
-                <Route path="/dashboard/volunteer-opportunities/:opportunityId/applications" element={<ApplicationsListPage />} />
+                
+                {/* Application Management */}
+                <Route path="/dashboard/applications" element={<ViewApplicationsPage />} />
+                <Route path="/dashboard/volunteer-opportunities/:opportunityId/applications" element={<ViewApplicationsPage />} />
                 <Route path="/dashboard/applications/:applicationId" element={<ApplicationDetailPage />} />
               </Route>
 
               {/* Volunteer Routes */}
               <Route element={<ProtectedRoute allowedRoles={["volunteer"]} />}>
                 <Route path="/dashboard/events" element={<div>Events Page (To be implemented)</div>} />
+                <Route path="/dashboard/volunteer-opportunities" element={<VolunteerOpportunityPage />} />
+                <Route path="/dashboard/applications" element={<div>My Applications (To be implemented)</div>} />
               </Route>
 
               {/* Donor Routes */}

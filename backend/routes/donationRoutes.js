@@ -10,10 +10,10 @@ import { authenticateUser, authorizeRole } from "../controllers/authController.j
 const router = express.Router();
 
 // Process a donation (accessible only by donors)
-router.post("/charge", authenticateUser, authorizeRole("Donor"), processDonation);
+router.post("/charge", authenticateUser, authorizeRole("donor"), processDonation);
 
 // Get donation history for the donor
-router.get("/history", authenticateUser, authorizeRole("Donor"), getDonationHistory);
+router.get("/history", authenticateUser, authorizeRole("donor"), getDonationHistory);
 
 // Get donations received by the NGO associated with the logged-in user
 // Note: This route needs to be BEFORE the /:donationId route to avoid conflicts
