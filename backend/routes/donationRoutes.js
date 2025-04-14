@@ -17,7 +17,7 @@ router.get("/history", authenticateUser, authorizeRole("Donor"), getDonationHist
 
 // Get donations received by the NGO associated with the logged-in user
 // Note: This route needs to be BEFORE the /:donationId route to avoid conflicts
-router.get("/ngo/received", authenticateUser, authorizeRole("NGO"), getNgoDonations);
+router.get("/ngo/received", authenticateUser, authorizeRole("ngo"), getNgoDonations);
 
 // Get donation details by ID (accessible by both donor and associated NGO)
 router.get("/:donationId", authenticateUser, getDonationById);

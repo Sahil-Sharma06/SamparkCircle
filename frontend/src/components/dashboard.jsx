@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { FaUsers, FaHandHoldingHeart, FaCalendarAlt, FaChartLine } from "react-icons/fa";
+import {
+  FaUserEdit,
+  FaHandHoldingHeart,
+  FaDollarSign,
+  FaChartLine,
+  FaUsers
+} from "react-icons/fa";
 
 const Dashboard = () => {
   const { user } = useSelector((state) => state.auth);
@@ -28,14 +34,22 @@ const Dashboard = () => {
       <div className="text-center">
         <h1 className="text-4xl font-semibold">{greeting}, {user?.name || "User"}!</h1>
         <p className="mt-2 text-lg text-gray-400">
-          Role: <span className="font-medium text-gray-300">{role}</span>
+          Role: <span className="font-medium text-gray-300">{role.toUpperCase()}</span>
         </p>
       </div>
 
       {/* Dashboard Cards */}
-      <div className="grid w-full max-w-5xl grid-cols-1 gap-8 mt-12 md:grid-cols-3">
+      <div className="grid w-full max-w-6xl grid-cols-1 gap-8 mt-12 sm:grid-cols-2 lg:grid-cols-3">
         {role === "ngo" && (
           <>
+            <DashboardCard
+              icon={<FaUserEdit className="text-5xl text-gray-300" />}
+              title="Manage Profile"
+              description="View and update your NGO profile."
+              buttonText="Edit Profile"
+              buttonAction={() => navigate("/dashboard/profile")}
+            />
+
             <DashboardCard
               icon={<FaHandHoldingHeart className="text-5xl text-gray-300" />}
               title="Manage Fundraisers"
@@ -43,61 +57,46 @@ const Dashboard = () => {
               buttonText="Create Fundraiser"
               buttonAction={() => navigate("/dashboard/fundraisers/create")}
             />
-            
+
+            <DashboardCard
+              icon={<FaDollarSign className="text-5xl text-gray-300" />}
+              title="Donation History"
+              description="View donations made to your campaigns."
+              buttonText="View Donations"
+              buttonAction={() => navigate("/dashboard/donations")}
+            />
+
             <DashboardCard
               icon={<FaChartLine className="text-5xl text-gray-300" />}
-              title="Donation Analytics"
-              description="View detailed metrics about your donations and campaigns."
+              title="Analytics"
+              description="See insights and performance metrics."
               buttonText="View Analytics"
               buttonAction={() => navigate("/dashboard/analytics")}
             />
+
+            <DashboardCard
+              icon={<FaUsers className="text-5xl text-gray-300" />}
+              title="Volunteer Opportunities"
+              description="Manage volunteer postings and applications."
+              buttonText="Manage Opportunities"
+              buttonAction={() => navigate("/dashboard/volunteer-opportunities")}
+            />
           </>
-        )}
-
-        {role === "donor" && (
-          <DashboardCard
-            icon={<FaUsers className="text-5xl text-gray-300" />}
-            title="Browse Fundraisers"
-            description="Support causes that matter to you."
-            buttonText="Browse Fundraisers"
-            buttonAction={() => navigate("/dashboard/fundraisers")}
-          />
-        )}
-
-        {role === "volunteer" && (
-          <DashboardCard
-            icon={<FaCalendarAlt className="text-5xl text-gray-300" />}
-            title="Join Events"
-            description="Find and participate in volunteer events."
-            buttonText="View Events"
-            buttonAction={() => navigate("/dashboard/events")}
-          />
-        )}
-        
-        {role === "admin" && (
-          <DashboardCard
-            icon={<FaChartLine className="text-5xl text-gray-300" />}
-            title="Platform Analytics"
-            description="View global donation analytics and performance metrics."
-            buttonText="View Analytics"
-            buttonAction={() => navigate("/dashboard/admin/analytics")}
-          />
         )}
       </div>
     </div>
   );
 };
 
-// 🔹 Reusable Dashboard Card Component
 const DashboardCard = ({ icon, title, description, buttonText, buttonAction }) => {
   return (
-    <div className="relative p-6 transition duration-300 transform bg-gray-800 bg-opacity-50 shadow-lg backdrop-blur-lg rounded-xl hover:scale-105 hover:bg-opacity-70">
+    <div className="relative p-6 transition duration-300 transform bg-gray-800 shadow-lg rounded-xl hover:scale-105">
       <div className="flex flex-col items-center text-center">
         {icon}
-        <h2 className="mt-4 text-xl font-medium text-gray-100">{title}</h2>
+        <h2 className="mt-4 text-xl font-semibold text-white">{title}</h2>
         <p className="mt-2 text-sm text-gray-400">{description}</p>
         <button
-          className="px-5 py-2 mt-4 text-gray-200 transition-all duration-300 bg-gray-700 rounded-lg hover:bg-gray-600"
+          className="px-5 py-2 mt-4 text-sm font-medium text-white transition bg-gray-700 rounded-lg hover:bg-gray-600"
           onClick={buttonAction}
         >
           {buttonText}

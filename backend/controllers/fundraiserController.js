@@ -68,6 +68,47 @@ export const updateCampaign = async (req, res) => {
 };
 
 /**
+ * Delete an existing campaign.
+ * Only the NGO that created the campaign is allowed to delete it.
+ */
+export const deleteCampaign = async (req, res) => {
+  try {
+    const { campaignId } = req.params;
+    
+    // First check if the campaign exists
+    const campaign = await Campaign.findById(campaignId);
+    if (!campaign) {
+      return res.status(404).json({ message: "Campaign not found" });
+    }
+    
+    // Ensure that the authenticated user is the creator of the campaign
+    if (campaign.createdBy.toString() !== req.user.id.toString()) {
+      return res.status(403).json({ message: "Not authorized to delete this campaign" });
+    }
+    
+    // Check if there are any active donations linked to this campaign
+    // This would require additional logic if you want to prevent deletion of campaigns with donations
+    // For example:
+    // const hasDonations = await Donation.exists({ campaign: campaignId });
+    // if (hasDonations) {
+    //   return res.status(400).json({ message: "Cannot delete campaign with existing donations" });
+    // }
+    
+    // Delete the campaign
+    await Campaign.findByIdAndDelete(campaignId);
+    
+    return res.status(200).json({
+      message: "Campaign deleted successfully"
+    });
+  } catch (error) {
+    console.error("Error deleting campaign:", error);
+    return res.status(500).json({
+      error: "Server error while deleting campaign",
+    });
+  }
+};
+
+/**
  * Get the details of a specific campaign.
  */
 export const getCampaign = async (req, res) => {

@@ -1,5 +1,11 @@
 import express from "express";
-import { createCampaign, updateCampaign, getCampaign, listCampaigns } from "../controllers/fundraiserController.js";
+import { 
+  createCampaign, 
+  updateCampaign, 
+  getCampaign, 
+  listCampaigns,
+  deleteCampaign 
+} from "../controllers/fundraiserController.js";
 import { authenticateUser, authorizeRole } from "../controllers/authController.js";
 
 const router = express.Router();
@@ -9,6 +15,9 @@ router.post("/", authenticateUser, authorizeRole("NGO"), createCampaign);
 
 // PUT /api/fundraisers/:campaignId - Update an existing campaign (restricted to the creator)
 router.put("/:campaignId", authenticateUser, authorizeRole("NGO"), updateCampaign);
+
+// DELETE /api/fundraisers/:campaignId - Delete an existing campaign (restricted to the creator)
+router.delete("/:campaignId", authenticateUser, authorizeRole("NGO"), deleteCampaign);
 
 // GET /api/fundraisers/:campaignId - Get details of a specific campaign (public)
 router.get("/:campaignId", getCampaign);

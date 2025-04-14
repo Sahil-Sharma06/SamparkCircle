@@ -1,7 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { FaUsers, FaHandHoldingHeart, FaCalendarAlt, FaUserEdit, FaChartBar, FaDonate } from "react-icons/fa";
+import {
+  FaUsers,
+  FaHandHoldingHeart,
+  FaCalendarAlt,
+  FaUserEdit,
+  FaChartBar,
+  FaDonate,
+  FaPlusCircle,
+  FaInbox
+} from "react-icons/fa";
 
 const DashboardPage = () => {
   const { user } = useSelector((state) => state.auth);
@@ -33,7 +42,8 @@ const DashboardPage = () => {
           Role: <span className="font-medium">{role}</span>
         </p>
       </div>
-      <div className="grid w-full max-w-5xl grid-cols-1 gap-8 mt-12 md:grid-cols-3">
+
+      <div className="grid w-full max-w-6xl grid-cols-1 gap-8 mt-12 sm:grid-cols-2 lg:grid-cols-3">
         {lowerRole === "ngo" && (
           <>
             <DashboardCard
@@ -45,10 +55,17 @@ const DashboardPage = () => {
             />
             <DashboardCard
               icon={<FaHandHoldingHeart className="text-5xl" />}
-              title="Manage Fundraisers"
-              description="Create and track your fundraising campaigns."
+              title="Create Fundraiser"
+              description="Start a new fundraising campaign."
               buttonText="Create Fundraiser"
               buttonAction={() => navigate("/dashboard/fundraisers/create")}
+            />
+            <DashboardCard
+              icon={<FaChartBar className="text-5xl" />}
+              title="Manage Fundraisers"
+              description="Edit or delete your existing campaigns."
+              buttonText="View Fundraisers"
+              buttonAction={() => navigate("/dashboard/fundraisers/manage")}
             />
             <DashboardCard
               icon={<FaDonate className="text-5xl" />}
@@ -71,8 +88,23 @@ const DashboardPage = () => {
               buttonText="Manage Opportunities"
               buttonAction={() => navigate("/dashboard/volunteer-opportunities")}
             />
+            <DashboardCard
+              icon={<FaPlusCircle className="text-5xl" />}
+              title="Create Opportunity"
+              description="Publish a new volunteer opportunity."
+              buttonText="Create Opportunity"
+              buttonAction={() => navigate("/dashboard/volunteer-opportunities/create")}
+            />
+            <DashboardCard
+              icon={<FaInbox className="text-5xl" />}
+              title="View Applications"
+              description="Review applications received for opportunities."
+              buttonText="View Applications"
+              buttonAction={() => navigate("/dashboard/volunteer-applications")}
+            />
           </>
         )}
+
         {lowerRole === "donor" && (
           <DashboardCard
             icon={<FaHandHoldingHeart className="text-5xl" />}
@@ -82,6 +114,7 @@ const DashboardPage = () => {
             buttonAction={() => navigate("/dashboard/fundraisers")}
           />
         )}
+
         {lowerRole === "volunteer" && (
           <DashboardCard
             icon={<FaCalendarAlt className="text-5xl" />}
@@ -102,7 +135,7 @@ const DashboardCard = ({ icon, title, description, buttonText, buttonAction }) =
       <div className="flex flex-col items-center text-center">
         {icon}
         <h2 className="mt-4 text-xl font-medium">{title}</h2>
-        <p className="mt-2 text-sm">{description}</p>
+        <p className="mt-2 text-sm text-gray-400">{description}</p>
         <button
           className="px-5 py-2 mt-4 text-gray-200 bg-gray-700 rounded-lg hover:bg-gray-600"
           onClick={buttonAction}
