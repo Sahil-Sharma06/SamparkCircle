@@ -10,8 +10,13 @@ const ProtectedRoute = ({ allowedRoles = [] }) => {
     return <Navigate to="/login" replace />;
   }
   
+  // If no specific roles are required, allow access to any authenticated user
+  if (allowedRoles.length === 0) {
+    return <Outlet />;
+  }
+  
   // Check if user has required role (case-insensitive check)
-  if (allowedRoles.length > 0 && !allowedRoles.includes(user.role.toLowerCase())) {
+  if (!allowedRoles.some(role => user.role.toLowerCase() === role.toLowerCase())) {
     return <Navigate to="/dashboard" replace />;
   }
   

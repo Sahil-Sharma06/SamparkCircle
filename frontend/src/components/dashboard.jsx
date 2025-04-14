@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { FaUsers, FaHandHoldingHeart, FaCalendarAlt } from "react-icons/fa";
+import { FaUsers, FaHandHoldingHeart, FaCalendarAlt, FaChartLine } from "react-icons/fa";
 
 const Dashboard = () => {
   const { user } = useSelector((state) => state.auth);
@@ -35,13 +35,23 @@ const Dashboard = () => {
       {/* Dashboard Cards */}
       <div className="grid w-full max-w-5xl grid-cols-1 gap-8 mt-12 md:grid-cols-3">
         {role === "ngo" && (
-          <DashboardCard
-            icon={<FaHandHoldingHeart className="text-5xl text-gray-300" />}
-            title="Manage Fundraisers"
-            description="Create and track your fundraising campaigns."
-            buttonText="Create Fundraiser"
-            buttonAction={() => navigate("/dashboard/fundraisers/create")}
-          />
+          <>
+            <DashboardCard
+              icon={<FaHandHoldingHeart className="text-5xl text-gray-300" />}
+              title="Manage Fundraisers"
+              description="Create and track your fundraising campaigns."
+              buttonText="Create Fundraiser"
+              buttonAction={() => navigate("/dashboard/fundraisers/create")}
+            />
+            
+            <DashboardCard
+              icon={<FaChartLine className="text-5xl text-gray-300" />}
+              title="Donation Analytics"
+              description="View detailed metrics about your donations and campaigns."
+              buttonText="View Analytics"
+              buttonAction={() => navigate("/dashboard/analytics")}
+            />
+          </>
         )}
 
         {role === "donor" && (
@@ -61,6 +71,16 @@ const Dashboard = () => {
             description="Find and participate in volunteer events."
             buttonText="View Events"
             buttonAction={() => navigate("/dashboard/events")}
+          />
+        )}
+        
+        {role === "admin" && (
+          <DashboardCard
+            icon={<FaChartLine className="text-5xl text-gray-300" />}
+            title="Platform Analytics"
+            description="View global donation analytics and performance metrics."
+            buttonText="View Analytics"
+            buttonAction={() => navigate("/dashboard/admin/analytics")}
           />
         )}
       </div>

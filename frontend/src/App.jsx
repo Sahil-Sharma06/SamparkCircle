@@ -9,6 +9,7 @@ import CreateFundraiserPage from "./pages/CreateFundraiserPage";
 import NgoProfilePage from "./pages/NgoProfilePage"; // NGO Profile Page
 import CreateNgoProfilePage from "./pages/CreateNgoProfilePage"; // Import the new Create Profile Page
 import DonationHistoryPage from "./pages/DonationHistoryPage"; // Import the Donation History Page
+import AnalyticsPage from "./pages/AnalyticsPage"; // Import the new Analytics Page
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFoundPage from "./pages/NotFoundPage";
 import Navbar from "./components/navbar";
@@ -36,6 +37,7 @@ const App = () => {
                 <Route path="/dashboard/profile/create" element={<CreateNgoProfilePage />} />
                 <Route path="/dashboard/fundraisers/create" element={<CreateFundraiserPage />} />
                 <Route path="/dashboard/donations" element={<DonationHistoryPage />} /> {/* NGO donation history */}
+                <Route path="/dashboard/analytics" element={<AnalyticsPage />} /> {/* NGO analytics */}
               </Route>
 
               {/* Volunteer Routes */}
@@ -47,6 +49,11 @@ const App = () => {
               <Route element={<ProtectedRoute allowedRoles={["donor"]} />}>
                 <Route path="/dashboard/fundraisers" element={<FundraisersPage />} />
                 <Route path="/dashboard/donations" element={<DonationHistoryPage />} /> {/* Donor donation history */}
+              </Route>
+
+              {/* Admin Routes */}
+              <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+                <Route path="/dashboard/admin/analytics" element={<AnalyticsPage />} /> {/* Admin analytics */}
               </Route>
             </Route>
 

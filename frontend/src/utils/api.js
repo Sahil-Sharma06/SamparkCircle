@@ -37,4 +37,71 @@ api.interceptors.response.use(
   }
 );
 
+// Analytics API Services
+const analyticsAPI = {
+  // Get NGO-specific analytics
+  getNGOAnalytics: async (ngoId) => {
+    try {
+      const response = await api.get(`/analytics/ngo/${ngoId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching NGO analytics:", error);
+      throw error;
+    }
+  },
+
+  // Get global analytics (admin only)
+  getGlobalAnalytics: async () => {
+    try {
+      const response = await api.get("/analytics/global");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching global analytics:", error);
+      throw error;
+    }
+  },
+
+  // Get time-based donation data for charts
+  getTimeSeriesData: async (ngoId, timeframe = "month") => {
+    try {
+      const response = await api.get(`/analytics/timeseries`, {
+        params: { ngoId, timeframe },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching time series data:", error);
+      throw error;
+    }
+  },
+
+  // Get donation breakdown by category
+  getCategoryData: async (ngoId) => {
+    try {
+      const response = await api.get(`/analytics/categories`, {
+        params: { ngoId },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching category data:", error);
+      throw error;
+    }
+  },
+
+  // Get recent donations list
+  getRecentDonations: async (ngoId, limit = 10) => {
+    try {
+      const response = await api.get(`/donations/recent`, {
+        params: { ngoId, limit },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching recent donations:", error);
+      throw error;
+    }
+  },
+};
+
+// Add the analytics API to the main api export
+api.analytics = analyticsAPI;
+
 export default api;
