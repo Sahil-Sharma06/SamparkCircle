@@ -1,4 +1,5 @@
 import Campaign from "../models/campaign.models.js";
+import NGO from "../models/ngo.models.js";
 
 /**
  * Create a new fundraising campaign.
@@ -7,15 +8,29 @@ import Campaign from "../models/campaign.models.js";
 export const createCampaign = async (req, res) => {
   try {
     const { title, description, goal, image } = req.body;
+    
+    if (!title || !description || !goal) {
+      return res.status(400).json({ message: "Title, description, and goal are required." });
+    }
+    
+    // Find the NGO associated with this user
+    const ngo = await NGO.findOne({ createdBy: req.user.id });
+    if (!ngo) {
+      return res.status(404).json({ message: "You must create an NGO profile first" });
+    }
+    
     const newCampaign = new Campaign({
       title,
       description,
-      goal,
-      image,
-      createdBy: req.user.id,  // Use req.user.id as populated by authentication middleware
+      goal: Number(goal), // Ensure goal is stored as a number
+      image: image || "",
+      createdBy: req.user.id,
+      ngo: ngo._id,
+      amountRaised: 0 // Initialize with zero
     });
     
     await newCampaign.save();
+    
     return res.status(201).json({
       message: "Campaign created successfully",
       campaign: newCampaign,
@@ -36,22 +51,23 @@ export const updateCampaign = async (req, res) => {
   try {
     const { campaignId } = req.params;
     const campaign = await Campaign.findById(campaignId);
+    
     if (!campaign) {
       return res.status(404).json({ message: "Campaign not found" });
     }
     
     // Ensure that the authenticated user is the creator of the campaign
-    if (campaign.createdBy.toString() !== req.user.id.toString()) {
+    if (campaign.createdBy.toString() !== req.user.id) {
       return res.status(403).json({ message: "Not authorized to update this campaign" });
     }
     
-    // Allowed fields to update
-    const allowedUpdates = ["title", "description", "goal", "image"];
-    allowedUpdates.forEach((field) => {
-      if (req.body[field] !== undefined) {
-        campaign[field] = req.body[field];
-      }
-    });
+    // Update allowed fields
+    const { title, description, goal, image } = req.body;
+    
+    if (title) campaign.title = title;
+    if (description) campaign.description = description;
+    if (goal) campaign.goal = Number(goal); // Ensure goal is stored as a number
+    if (image !== undefined) campaign.image = image;
     
     await campaign.save();
     
@@ -82,17 +98,9 @@ export const deleteCampaign = async (req, res) => {
     }
     
     // Ensure that the authenticated user is the creator of the campaign
-    if (campaign.createdBy.toString() !== req.user.id.toString()) {
+    if (campaign.createdBy.toString() !== req.user.id) {
       return res.status(403).json({ message: "Not authorized to delete this campaign" });
     }
-    
-    // Check if there are any active donations linked to this campaign
-    // This would require additional logic if you want to prevent deletion of campaigns with donations
-    // For example:
-    // const hasDonations = await Donation.exists({ campaign: campaignId });
-    // if (hasDonations) {
-    //   return res.status(400).json({ message: "Cannot delete campaign with existing donations" });
-    // }
     
     // Delete the campaign
     await Campaign.findByIdAndDelete(campaignId);
@@ -114,10 +122,27 @@ export const deleteCampaign = async (req, res) => {
 export const getCampaign = async (req, res) => {
   try {
     const { campaignId } = req.params;
-    const campaign = await Campaign.findById(campaignId);
+    const campaign = await Campaign.findById(campaignId)
+      .populate("createdBy", "name")
+      .populate("ngo", "name");
+    
     if (!campaign) {
       return res.status(404).json({ message: "Campaign not found" });
     }
+    
+    // Ensure numerical properties are properly formatted
+    campaign.goal = Number(campaign.goal);
+    campaign.amountRaised = Number(campaign.amountRaised || 0);
+    
+    // Log what we're sending back for debugging
+    console.log("Sending campaign data:", {
+      id: campaign._id,
+      title: campaign.title,
+      goal: campaign.goal,
+      goalType: typeof campaign.goal,
+      amountRaised: campaign.amountRaised
+    });
+    
     return res.status(200).json({ campaign });
   } catch (error) {
     console.error("Error fetching campaign:", error);
@@ -129,12 +154,23 @@ export const getCampaign = async (req, res) => {
 
 /**
  * List all fundraising campaigns.
- * This endpoint is public and can optionally be enhanced with filtering and pagination.
+ * This endpoint is public and can be enhanced with filtering and pagination.
  */
 export const listCampaigns = async (req, res) => {
   try {
-    const campaigns = await Campaign.find();
-    return res.status(200).json({ campaigns });
+    const campaigns = await Campaign.find()
+      .populate("createdBy", "name")
+      .populate("ngo", "name")
+      .sort({ createdAt: -1 });
+    
+    // Ensure all numeric fields are properly formatted
+    const formattedCampaigns = campaigns.map(campaign => ({
+      ...campaign.toObject(),
+      goal: Number(campaign.goal),
+      amountRaised: Number(campaign.amountRaised || 0)
+    }));
+    
+    return res.status(200).json({ campaigns: formattedCampaigns });
   } catch (error) {
     console.error("Error listing campaigns:", error);
     return res.status(500).json({

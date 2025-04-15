@@ -8,9 +8,13 @@ const api = axios.create({
 // Request interceptor - adds auth token to requests
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("authToken");
+    // Check for token in both localStorage keys for backward compatibility
+    const token = localStorage.getItem("authToken") || localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      console.log("Adding auth token to request:", config.url);
+    } else {
+      console.warn("No auth token found for request:", config.url);
     }
     return config;
   },
@@ -27,15 +31,82 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
+    // Enhanced error logging
+    console.error(`API Error (${error.config?.url}):`, error.response?.data || error.message);
+    
     // Handle 401 Unauthorized globally - could redirect to login
     if (error.response && error.response.status === 401) {
       console.warn("Authentication error - you may need to log in again");
       // You could add auto-logout here
       // store.dispatch(logout()) or similar
     }
+    
+    // Handle 403 Forbidden with more specific message
+    if (error.response && error.response.status === 403) {
+      console.warn("Authorization error - you don't have permission for this action");
+    }
+    
     return Promise.reject(error);
   }
 );
+
+// Fundraiser API Services
+const fundraiserAPI = {
+  // Create a new fundraiser
+  createFundraiser: async (fundraiserData) => {
+    try {
+      const response = await api.post("/fundraisers", fundraiserData);
+      return response.data;
+    } catch (error) {
+      console.error("Error creating fundraiser:", error);
+      throw error;
+    }
+  },
+  
+  // Get all fundraisers
+  getAllFundraisers: async () => {
+    try {
+      const response = await api.get("/fundraisers");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching fundraisers:", error);
+      throw error;
+    }
+  },
+  
+  // Get a single fundraiser by ID
+  getFundraiserById: async (id) => {
+    try {
+      const response = await api.get(`/fundraisers/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching fundraiser #${id}:`, error);
+      throw error;
+    }
+  },
+  
+  // Update a fundraiser
+  updateFundraiser: async (id, updatedData) => {
+    try {
+      const response = await api.put(`/fundraisers/${id}`, updatedData);
+      return response.data;
+    } catch (error) {
+      console.error(`Error updating fundraiser #${id}:`, error);
+      throw error;
+    }
+  },
+  
+  // Delete a fundraiser
+  deleteFundraiser: async (id) => {
+    try {
+      const response = await api.delete(`/fundraisers/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error deleting fundraiser #${id}:`, error);
+      throw error;
+    }
+  }
+};
 
 // Analytics API Services
 const analyticsAPI = {
@@ -101,7 +172,34 @@ const analyticsAPI = {
   },
 };
 
-// Add the analytics API to the main api export
+// Donations API Services
+const donationsAPI = {
+  // Process a donation
+  processDonation: async (campaignId, amount) => {
+    try {
+      const response = await api.post(`/donations/direct-campaign/${campaignId}`, { amount });
+      return response.data;
+    } catch (error) {
+      console.error("Error processing donation:", error);
+      throw error;
+    }
+  },
+  
+  // Get donation history
+  getDonationHistory: async () => {
+    try {
+      const response = await api.get("/donations/history");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching donation history:", error);
+      throw error;
+    }
+  }
+};
+
+// Add service modules to the main api export
 api.analytics = analyticsAPI;
+api.fundraisers = fundraiserAPI;
+api.donations = donationsAPI;
 
 export default api;

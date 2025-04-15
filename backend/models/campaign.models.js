@@ -6,10 +6,19 @@ const campaignSchema = new mongoose.Schema({
   goal: { type: Number, required: true },
   amountRaised: { type: Number, default: 0 },
   image: { type: String, default: "" },
-  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  createdAt: { type: Date, default: Date.now },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  ngo: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "NGO",
+    required: true,
+  }
+}, {
+  timestamps: true // Automatically adds createdAt and updatedAt
 });
 
 const Campaign = mongoose.model("Campaign", campaignSchema);
-
 export default Campaign;

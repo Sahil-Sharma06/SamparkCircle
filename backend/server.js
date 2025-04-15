@@ -62,6 +62,8 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/admin/auth", adminAuthRoutes);
 app.use("/api/donations", donationRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/donations", donationRoutes);
+
 
 // Global error handler middleware
 app.use((err, req, res, next) => {

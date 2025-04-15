@@ -24,7 +24,11 @@ import VolunteerOpportunityPage from "./pages/VolunteerOpportunityPage";
 import CreateOpportunityPage from "./pages/CreateOpportunityPage";
 import ApplicationDetailPage from "./pages/ApplicationDetailPage";
 
-// Import the edit opportunity page when it's created
+// Donation and Fundraiser Detail Pages
+import DonationPage from "./pages/DonationPage";
+import FundraiserDetailsPage from "./pages/FundraiserDetailsPage";
+
+// Placeholder for edit opportunity page
 const EditOpportunityPage = () => <div>Edit Opportunity Page</div>;
 
 const App = () => {
@@ -52,14 +56,9 @@ const App = () => {
                 <Route path="/dashboard/fundraisers/:campaignId/edit" element={<EditFundraiserPage />} />
                 <Route path="/dashboard/donations" element={<DonationHistoryPage />} />
                 <Route path="/dashboard/analytics" element={<AnalyticsPage />} />
-                
-                {/* Volunteer Opportunity Management */}
                 <Route path="/dashboard/volunteer-opportunities" element={<VolunteerOpportunityPage />} />
                 <Route path="/dashboard/volunteer-opportunities/create" element={<CreateOpportunityPage />} />
                 <Route path="/dashboard/volunteer-opportunities/:opportunityId/edit" element={<EditOpportunityPage />} />
-                
-                {/* Application Management */}
-
                 <Route path="/dashboard/applications/:applicationId" element={<ApplicationDetailPage />} />
               </Route>
 
@@ -81,6 +80,10 @@ const App = () => {
                 <Route path="/dashboard/admin/analytics" element={<AnalyticsPage />} />
               </Route>
             </Route>
+
+            {/* Shared Routes - Available to both authenticated and unauthenticated users */}
+            <Route path="/donate/:id" element={<DonationPage />} />
+            <Route path="/fundraiser-details/:id" element={<FundraiserDetailsPage />} />
 
             {/* 404 Fallback */}
             <Route path="*" element={<NotFoundPage />} />
