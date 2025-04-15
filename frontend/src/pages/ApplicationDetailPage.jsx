@@ -3,11 +3,6 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { formatDistanceToNow } from 'date-fns';
-import { fetchApplicationsForOpportunity, updateApplicationStatus } from '../../redux/slices/volunteerSlice';
-import VolunteerAPI from '../../services/volunteerAPI';
-import Loader from '../../components/common/Loader';
-import ErrorAlert from '../../components/common/ErrorAlert';
-import ConfirmModal from '../../components/common/ConfirmModal';
 
 const ApplicationDetailPage = () => {
   const { applicationId } = useParams();

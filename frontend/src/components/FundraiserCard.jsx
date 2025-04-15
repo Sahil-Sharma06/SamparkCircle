@@ -1,7 +1,6 @@
 import React from "react";
 
 const FundraiserCard = ({ fundraiser }) => {
-  // Destructure the required fields from the fundraiser object
   const { title, description, goal, amountRaised, image } = fundraiser;
 
   return (

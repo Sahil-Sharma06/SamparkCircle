@@ -22,7 +22,6 @@ import Footer from "./components/footer";
 // Volunteer-related Pages
 import VolunteerOpportunityPage from "./pages/VolunteerOpportunityPage";
 import CreateOpportunityPage from "./pages/CreateOpportunityPage";
-import ViewApplicationsPage from "./pages/ViewApplicationsPage";
 import ApplicationDetailPage from "./pages/ApplicationDetailPage";
 
 // Import the edit opportunity page when it's created
@@ -60,8 +59,7 @@ const App = () => {
                 <Route path="/dashboard/volunteer-opportunities/:opportunityId/edit" element={<EditOpportunityPage />} />
                 
                 {/* Application Management */}
-                <Route path="/dashboard/applications" element={<ViewApplicationsPage />} />
-                <Route path="/dashboard/volunteer-opportunities/:opportunityId/applications" element={<ViewApplicationsPage />} />
+
                 <Route path="/dashboard/applications/:applicationId" element={<ApplicationDetailPage />} />
               </Route>
 

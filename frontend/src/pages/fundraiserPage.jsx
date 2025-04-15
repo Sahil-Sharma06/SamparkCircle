@@ -11,8 +11,6 @@ const FundraisersPage = () => {
     const fetchFundraisers = async () => {
       try {
         const response = await api.get("/fundraisers");
-        // Adjust according to your backend response structure
-        // For example, if the response has a field named 'campaigns' or 'fundraisers'
         setFundraisers(response.data.campaigns || response.data.fundraisers || []);
       } catch (err) {
         setError("Failed to load fundraisers.");
