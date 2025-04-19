@@ -11,29 +11,59 @@ export default function VolunteerOpportunityPage() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
+    const fetchOpportunities = async () => {
       try {
+        setLoading(true);
+        const token = localStorage.getItem("authToken");
+
+        if (!token) {
+          setLoading(false);
+          return;
+        }
+
         const decoded = jwtDecode(token);
         setUser({
           id: decoded.id,
           role: decoded.role,
         });
-      } catch (err) {
-        console.error("Token decode failed", err);
-      }
-    }
 
-    fetch("http://localhost:3000/api/volunteer/opportunities")
-      .then((res) => res.json())
-      .then((data) => {
-        setOpportunities(data.opportunities);
+        const role = decoded.role?.toLowerCase();
+        // Make sure we're using the correct endpoint
+        const url =
+          role === "ngo"
+            ? "http://localhost:3000/api/volunteer/opportunities/mine"
+            : "http://localhost:3000/api/volunteer/opportunities";
+
+        console.log("Fetching opportunities from:", url);
+
+        const res = await fetch(url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+
+        const data = await res.json();
+        console.log("✅ Opportunities data:", data);
+
+        if (data.opportunities && Array.isArray(data.opportunities)) {
+          setOpportunities(data.opportunities);
+        } else {
+          console.error("Received invalid opportunities data:", data);
+          setMessage("Invalid data format received from server");
+        }
+      } catch (err) {
+        console.error("❌ Error fetching opportunities:", err);
+        setMessage(`Error loading opportunities: ${err.message}`);
+      } finally {
         setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Error fetching opportunities:", err);
-        setLoading(false);
-      });
+      }
+    };
+
+    fetchOpportunities();
   }, []);
 
   const handleApply = async (e) => {
@@ -45,7 +75,7 @@ export default function VolunteerOpportunityPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
         body: JSON.stringify({
           opportunityId: selectedOpportunityId,
@@ -55,11 +85,11 @@ export default function VolunteerOpportunityPage() {
 
       const data = await res.json();
       if (res.ok) {
-        setMessage("Application submitted successfully!");
+        setMessage("✅ Application submitted successfully!");
         setSelectedOpportunityId(null);
         setCoverLetter("");
       } else {
-        setMessage(data.message || "Application failed.");
+        setMessage(data.message || "❌ Application failed.");
       }
     } catch (error) {
       console.error("Error submitting application:", error);
@@ -75,14 +105,14 @@ export default function VolunteerOpportunityPage() {
       const res = await fetch(`http://localhost:3000/api/volunteer/opportunities/${id}`, {
         method: "DELETE",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
       });
 
       const data = await res.json();
       if (res.ok) {
         setOpportunities(opportunities.filter((opp) => opp._id !== id));
-        alert("Opportunity deleted successfully.");
+        alert("✅ Opportunity deleted successfully.");
       } else {
         alert(data.message || "Delete failed.");
       }
@@ -93,23 +123,42 @@ export default function VolunteerOpportunityPage() {
 
   return (
     <div className="min-h-screen px-6 py-10 text-white bg-gray-950">
-      <h1 className="mb-6 text-3xl font-bold text-center">Volunteer Opportunities</h1>
+      <h1 className="mb-6 text-3xl font-bold text-center">
+        {user?.role?.toLowerCase() === "ngo" ? "Manage Your Opportunities" : "Volunteer Opportunities"}
+      </h1>
+
+      {message && <p className="mb-4 text-center">{message}</p>}
 
       {loading ? (
-        <p className="text-center">Loading...</p>
+        <p className="text-center">Loading opportunities...</p>
       ) : opportunities.length === 0 ? (
-        <p className="text-center text-gray-400">No opportunities available.</p>
+        <div className="text-center">
+          <p className="text-gray-400">No opportunities available.</p>
+          {user?.role?.toLowerCase() === "ngo" && (
+            <p className="mt-4 text-gray-300">
+              Use the "Create Opportunity" button in the dashboard to add new volunteer opportunities.
+            </p>
+          )}
+        </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {opportunities.map((opp) => (
-            <div key={opp._id} onClick={() => user?.role === "Volunteer" && setSelectedOpportunityId(opp._id)}>
-              <OpportunityCard opportunity={opp} onDelete={handleDelete} />
+            <div
+              key={opp._id}
+              onClick={() =>
+                user?.role?.toLowerCase() === "volunteer" && setSelectedOpportunityId(opp._id)
+              }
+              className="cursor-pointer"
+            >
+              <OpportunityCard 
+                opportunity={opp} 
+                onDelete={user?.role?.toLowerCase() === "ngo" ? handleDelete : null} 
+              />
             </div>
           ))}
         </div>
       )}
 
-      {/* Apply Form Modal */}
       {selectedOpportunityId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
           <div className="w-full max-w-md p-6 bg-gray-800 shadow-lg rounded-2xl">

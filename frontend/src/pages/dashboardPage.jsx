@@ -24,13 +24,27 @@ const DashboardPage = () => {
     else setGreeting("Good Evening");
   }, []);
 
+  useEffect(() => {
+    // Redirect to login if not authenticated
+    if (!user) {
+      navigate("/login");
+    }
+  }, [user, navigate]);
+
   if (!user) {
-    navigate("/login");
-    return null;
+    return <div className="flex justify-center items-center min-h-screen bg-gray-900">
+      <p className="text-white">Redirecting to login...</p>
+    </div>;
   }
 
   const role = user?.role || "Unknown";
   const lowerRole = role.toLowerCase();
+  
+  // Helper function to handle navigation with debugging
+  const handleNavigate = (path) => {
+    console.log("Navigating to:", path);
+    navigate(path);
+  };
 
   return (
     <div className="flex flex-col items-center min-h-screen p-8 text-gray-200 bg-gray-900">
@@ -51,78 +65,106 @@ const DashboardPage = () => {
               title="Manage Profile"
               description="View and update your NGO profile."
               buttonText="Edit Profile"
-              buttonAction={() => navigate("/dashboard/profile")}
+              buttonAction={() => handleNavigate("/dashboard/profile")}
             />
             <DashboardCard
               icon={<FaHandHoldingHeart className="text-5xl" />}
               title="Create Fundraiser"
               description="Start a new fundraising campaign."
               buttonText="Create Fundraiser"
-              buttonAction={() => navigate("/dashboard/fundraisers/create")}
+              buttonAction={() => handleNavigate("/dashboard/fundraisers/create")}
             />
             <DashboardCard
               icon={<FaChartBar className="text-5xl" />}
               title="Manage Fundraisers"
               description="Edit or delete your existing campaigns."
               buttonText="View Fundraisers"
-              buttonAction={() => navigate("/dashboard/fundraisers/manage")}
+              buttonAction={() => handleNavigate("/dashboard/fundraisers/manage")}
             />
             <DashboardCard
               icon={<FaDonate className="text-5xl" />}
               title="Donation History"
               description="View donations made to your campaigns."
               buttonText="View Donations"
-              buttonAction={() => navigate("/dashboard/donations")}
+              buttonAction={() => handleNavigate("/dashboard/donations")}
             />
             <DashboardCard
               icon={<FaChartBar className="text-5xl" />}
               title="Analytics"
               description="See insights and performance metrics."
               buttonText="View Analytics"
-              buttonAction={() => navigate("/dashboard/analytics")}
+              buttonAction={() => handleNavigate("/dashboard/analytics")}
             />
             <DashboardCard
               icon={<FaUsers className="text-5xl" />}
               title="Volunteer Opportunities"
               description="Manage volunteer postings and applications."
               buttonText="Manage Opportunities"
-              buttonAction={() => navigate("/dashboard/volunteer-opportunities")}
+              buttonAction={() => handleNavigate("/volunteer/opportunities/manage")}
             />
             <DashboardCard
               icon={<FaPlusCircle className="text-5xl" />}
               title="Create Opportunity"
               description="Publish a new volunteer opportunity."
               buttonText="Create Opportunity"
-              buttonAction={() => navigate("/dashboard/volunteer-opportunities/create")}
+              buttonAction={() => handleNavigate("/volunteer/opportunities/create")}
             />
             <DashboardCard
               icon={<FaInbox className="text-5xl" />}
               title="View Applications"
               description="Review applications received for opportunities."
               buttonText="View Applications"
-              buttonAction={() => navigate("/dashboard/volunteer-applications")}
+              buttonAction={() => {
+                console.log("Trying to navigate to applications page");
+                handleNavigate("/volunteer/applications");
+              }}
             />
           </>
         )}
 
         {lowerRole === "donor" && (
-          <DashboardCard
-            icon={<FaHandHoldingHeart className="text-5xl" />}
-            title="Browse Fundraisers"
-            description="Support causes that matter to you."
-            buttonText="Browse Fundraisers"
-            buttonAction={() => navigate("/dashboard/fundraisers")}
-          />
+          <>
+            <DashboardCard
+              icon={<FaHandHoldingHeart className="text-5xl" />}
+              title="Browse Fundraisers"
+              description="Support causes that matter to you."
+              buttonText="Browse Fundraisers"
+              buttonAction={() => handleNavigate("/dashboard/fundraisers")}
+            />
+            <DashboardCard
+              icon={<FaDonate className="text-5xl" />}
+              title="Donation History"
+              description="View your donation history."
+              buttonText="View Donations"
+              buttonAction={() => handleNavigate("/dashboard/donations/history")}
+            />
+          </>
         )}
 
         {lowerRole === "volunteer" && (
-          <DashboardCard
-            icon={<FaCalendarAlt className="text-5xl" />}
-            title="Join Events"
-            description="Find and participate in volunteer events."
-            buttonText="View Events"
-            buttonAction={() => navigate("/dashboard/events")}
-          />
+          <>
+            <DashboardCard
+              icon={<FaCalendarAlt className="text-5xl" />}
+              title="Join Events"
+              description="Find and participate in volunteer events."
+              buttonText="View Events"
+              buttonAction={() => handleNavigate("/dashboard/events")}
+            />
+            <DashboardCard
+              icon={<FaUsers className="text-5xl" />}
+              title="Volunteer Opportunities"
+              description="Find opportunities to volunteer with NGOs."
+              buttonText="Browse Opportunities"
+              buttonAction={() => handleNavigate("/volunteer/opportunities")}
+            />
+            <DashboardCard
+              icon={<FaInbox className="text-5xl" />}
+              title="My Applications"
+              description="Track your volunteer applications."
+              buttonText="View Applications"
+              buttonAction={() => handleNavigate("/volunteer/my-applications")}
+            />
+          </>
         )}
       </div>
     </div>

@@ -1,277 +1,357 @@
-// src/pages/volunteer/ApplicationDetailPage.jsx
-import React, { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { formatDistanceToNow } from 'date-fns';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 
 const ApplicationDetailPage = () => {
   const { applicationId } = useParams();
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-  
-  const { user, isAuthenticated } = useSelector((state) => state.auth);
-  
   const [application, setApplication] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [unauthorized, setUnauthorized] = useState(false);
-  
-  const [showStatusModal, setShowStatusModal] = useState(false);
-  const [statusToUpdate, setStatusToUpdate] = useState('');
-  
+  const [error, setError] = useState("");
+  const [user, setUser] = useState(null);
+  const [feedback, setFeedback] = useState("");
+  const navigate = useNavigate();
+
   useEffect(() => {
-    const fetchApplicationData = async () => {
+    const checkAuth = async () => {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
       try {
-        setLoading(true);
-        const response = await VolunteerAPI.getApplication(applicationId);
-        const applicationData = response.data.application;
-        
-        // Check authorization - only the NGO who posted the opportunity or the volunteer who applied can view
-        const isNGOOwner = isAuthenticated && 
-          user.role === 'NGO' && 
-          applicationData.opportunity.postedBy === user._id;
-          
-        const isApplicant = isAuthenticated && 
-          user.role === 'Volunteer' && 
-          applicationData.volunteer._id === user._id;
-          
-        if (!isNGOOwner && !isApplicant) {
-          setUnauthorized(true);
-          return;
-        }
-        
-        setApplication(applicationData);
-      } catch (err) {
-        console.error('Error fetching application:', err);
-        setError(err.response?.data || { message: 'Failed to load application details' });
-      } finally {
-        setLoading(false);
+        const decoded = jwtDecode(token);
+        setUser({
+          id: decoded.id,
+          role: decoded.role
+        });
+
+        await fetchApplicationDetails(token);
+      } catch (error) {
+        console.error("Authentication error:", error);
+        setError("Authentication failed. Please login again.");
+        localStorage.removeItem("authToken");
+        setTimeout(() => navigate("/login"), 2000);
       }
     };
-    
-    if (applicationId) {
-      fetchApplicationData();
-    }
-  }, [applicationId, isAuthenticated, user]);
-  
-  const handleUpdateStatus = async () => {
-    if (!application || !statusToUpdate) return;
-    
+
+    checkAuth();
+  }, [applicationId, navigate]);
+
+  const fetchApplicationDetails = async (token) => {
+    setLoading(true);
     try {
-      await dispatch(updateApplicationStatus({
-        applicationId: application._id,
-        status: statusToUpdate
-      })).unwrap();
+      const response = await fetch(
+        `http://localhost:3000/api/volunteer/applications/${applicationId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch application details");
+      }
+
+      const data = await response.json();
+      setApplication(data.application);
       
-      // Update the local state with the new status
-      setApplication(prev => ({
-        ...prev,
-        status: statusToUpdate
-      }));
-      
-      setShowStatusModal(false);
-      setStatusToUpdate('');
-    } catch (err) {
-      console.error('Error updating status:', err);
-      setError(err.response?.data || { message: 'Failed to update application status' });
+      // Pre-fill feedback if it exists
+      if (data.application.feedback) {
+        setFeedback(data.application.feedback);
+      }
+    } catch (error) {
+      console.error("Error fetching application details:", error);
+      setError("Error loading application details. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
-  
-  const openStatusModal = (status) => {
-    setStatusToUpdate(status);
-    setShowStatusModal(true);
+
+  const handleStatusUpdate = async (newStatus) => {
+    if (!user || user.role?.toLowerCase() !== "ngo") return;
+
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/volunteer/applications/${applicationId}/status`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`
+          },
+          body: JSON.stringify({ 
+            status: newStatus,
+            feedback: feedback.trim() !== "" ? feedback : undefined
+          })
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to update application status");
+      }
+
+      const data = await response.json();
+      setApplication({
+        ...application,
+        status: newStatus,
+        feedback: feedback.trim() !== "" ? feedback : application.feedback
+      });
+
+      // Display success message
+      setError(`Application ${newStatus.toLowerCase()} successfully`);
+      setTimeout(() => setError(""), 3000);
+    } catch (error) {
+      console.error("Error updating application status:", error);
+      setError("Failed to update application status");
+    }
   };
-  
-  if (loading) return <Loader />;
-  
-  if (unauthorized) {
+
+  const getStatusBadgeClass = (status) => {
+    switch (status?.toLowerCase()) {
+      case "pending":
+        return "bg-yellow-500 bg-opacity-20 text-yellow-400";
+      case "approved":
+        return "bg-green-500 bg-opacity-20 text-green-400";
+      case "rejected":
+        return "bg-red-500 bg-opacity-20 text-red-400";
+      default:
+        return "bg-gray-500 bg-opacity-20 text-gray-400";
+    }
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "Unknown date";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+  };
+
+  if (loading) {
     return (
-      <div className="container px-4 py-8 mx-auto">
-        <ErrorAlert message="You are not authorized to view this application" />
-        <div className="mt-4">
-          <Link 
-            to="/volunteer/opportunities" 
-            className="text-blue-400 hover:text-blue-300"
-          >
-            &larr; Back to opportunities
-          </Link>
+      <div className="min-h-screen px-6 py-12 text-white bg-gray-950">
+        <div className="flex items-center justify-center w-full h-64">
+          <div className="text-lg">Loading application details...</div>
         </div>
       </div>
     );
   }
-  
-  if (error) {
+
+  if (!application) {
     return (
-      <div className="container px-4 py-8 mx-auto">
-        <ErrorAlert message={error.message || "Failed to load application details"} />
-        <div className="mt-4">
-          <Link 
-            to="/volunteer/opportunities" 
-            className="text-blue-400 hover:text-blue-300"
-          >
-            &larr; Back to opportunities
-          </Link>
-        </div>
-      </div>
-    );
-  }
-  
-  if (!application) return null;
-  
-  const isNGOOwner = isAuthenticated && 
-    user.role === 'NGO' && 
-    application.opportunity.postedBy === user._id;
-    
-  return (
-    <div className="container px-4 py-8 mx-auto">
-      <div className="mb-6">
-        {isNGOOwner ? (
-          <Link 
-            to={`/volunteer/opportunities/${application.opportunity._id}/applications`}
-            className="flex items-center text-blue-400 hover:text-blue-300"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M7.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l2.293 2.293a1 1 0 010 1.414z" clipRule="evenodd" />
-            </svg>
-            Back to all applications
-          </Link>
-        ) : (
-          <Link 
-            to="/volunteer/opportunities"
-            className="flex items-center text-blue-400 hover:text-blue-300"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M7.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l2.293 2.293a1 1 0 010 1.414z" clipRule="evenodd" />
-            </svg>
-            Back to opportunities
-          </Link>
-        )}
-      </div>
-      
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Left column - Application details */}
-        <div className="col-span-2">
-          <div className="overflow-hidden bg-gray-800 rounded-lg shadow-lg">
-            <div className="p-6">
-              <div className="flex items-start justify-between mb-6">
-                <div>
-                  <h1 className="mb-2 text-2xl font-bold text-white">
-                    Application for {application.opportunity.title}
-                  </h1>
-                  <p className="text-gray-400">
-                    Applied {formatDistanceToNow(new Date(application.appliedAt), { addSuffix: true })}
-                  </p>
-                </div>
-                <span className={`px-3 py-1 text-sm font-semibold rounded-full 
-                  ${application.status === 'Accepted' ? 'bg-green-900 text-green-200' : 
-                    application.status === 'Rejected' ? 'bg-red-900 text-red-200' : 
-                    'bg-yellow-900 text-yellow-200'}`}>
-                  {application.status}
-                </span>
-              </div>
-              
-              {application.coverLetter ? (
-                <div className="mb-8">
-                  <h2 className="mb-3 text-xl font-semibold text-white">Cover Letter</h2>
-                  <div className="p-4 text-gray-300 whitespace-pre-line bg-gray-700 rounded-md">
-                    {application.coverLetter}
-                  </div>
-                </div>
-              ) : (
-                <div className="mb-8">
-                  <h2 className="mb-3 text-xl font-semibold text-white">Cover Letter</h2>
-                  <div className="p-4 italic text-gray-400 bg-gray-700 rounded-md">
-                    No cover letter provided.
-                  </div>
-                </div>
-              )}
-              
-              <div className="mb-6">
-                <h2 className="mb-3 text-xl font-semibold text-white">Opportunity Details</h2>
-                <div className="p-4 bg-gray-700 rounded-md">
-                  <h3 className="mb-2 text-lg font-medium text-white">{application.opportunity.title}</h3>
-                  <p className="mb-2 text-gray-300">Location: {application.opportunity.location}</p>
-                  <Link 
-                    to={`/volunteer/opportunities/${application.opportunity._id}`}
-                    className="inline-flex items-center text-blue-400 hover:text-blue-300"
-                  >
-                    View Opportunity Details
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                  </Link>
-                </div>
-              </div>
-              
-              {isNGOOwner && application.status === 'Pending' && (
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => openStatusModal('Accepted')}
-                    className="px-6 py-2 font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
-                  >
-                    Accept Application
-                  </button>
-                  <button
-                    onClick={() => openStatusModal('Rejected')}
-                    className="px-6 py-2 font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-                  >
-                    Reject Application
-                  </button>
-                </div>
-              )}
-            </div>
+      <div className="min-h-screen px-6 py-12 text-white bg-gray-950">
+        <div className="max-w-3xl mx-auto p-8 bg-gray-800 rounded-xl">
+          <h1 className="mb-4 text-2xl font-bold text-center">Application Not Found</h1>
+          <p className="text-center text-gray-300">
+            The application you're looking for doesn't exist or you don't have permission to view it.
+          </p>
+          <div className="flex justify-center mt-6">
+            <button
+              onClick={() => navigate(-1)}
+              className="px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700"
+            >
+              Go Back
+            </button>
           </div>
         </div>
-        
-        {/* Right column - Volunteer info */}
-        <div className="col-span-1">
-          <div className="overflow-hidden bg-gray-800 rounded-lg shadow-lg">
-            <div className="p-6">
-              <h2 className="mb-4 text-xl font-semibold text-white">Volunteer Information</h2>
-              
-              <div className="mb-6">
-                <div className="flex items-center justify-center mb-4">
-                  <div className="flex items-center justify-center w-16 h-16 text-2xl font-bold text-white bg-blue-600 rounded-full">
-                    {application.volunteer?.name?.charAt(0).toUpperCase() || 'V'}
-                  </div>
-                </div>
-                
-                <h3 className="mb-1 text-lg font-medium text-center text-white">
-                  {application.volunteer?.name || 'Volunteer Name'}
-                </h3>
-                <p className="mb-4 text-center text-gray-400">
-                  {application.volunteer?.email || 'volunteer@example.com'}
+      </div>
+    );
+  }
+
+  const canUpdateStatus = user?.role?.toLowerCase() === "ngo" && application.status === "pending";
+  const isMyApplication = user?.role?.toLowerCase() === "volunteer";
+
+  return (
+    <div className="min-h-screen px-6 py-12 text-white bg-gray-950">
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-center justify-between mb-6">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center px-3 py-2 text-sm bg-gray-800 rounded-lg hover:bg-gray-700"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-5 h-5 mr-1"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
+            </svg>
+            Back
+          </button>
+
+          <div
+            className={`px-4 py-1 text-sm font-medium rounded-full ${getStatusBadgeClass(
+              application.status
+            )}`}
+          >
+            {application.status || "Pending"}
+          </div>
+        </div>
+
+        {error && (
+          <div className={`p-4 mb-6 text-center rounded-xl ${
+            error.includes("successfully") 
+              ? "bg-green-900 bg-opacity-20 text-green-400" 
+              : "bg-red-900 bg-opacity-20 text-red-400"
+          }`}>
+            {error}
+          </div>
+        )}
+
+        <div className="p-8 bg-gray-800 rounded-xl">
+          <h1 className="mb-6 text-2xl font-bold">
+            {application.opportunity?.title || "Application Details"}
+          </h1>
+
+          <div className="grid gap-6 mb-8 md:grid-cols-2">
+            <div>
+              <h2 className="mb-3 text-xl font-medium">Application Information</h2>
+              <div className="space-y-2 text-gray-300">
+                <p>
+                  <span className="font-medium text-white">Status:</span>{" "}
+                  {application.status || "Pending"}
                 </p>
-                
-                {isNGOOwner && application.status === 'Accepted' && (
-                  <a 
-                    href={`mailto:${application.volunteer?.email}`} 
-                    className="block w-full px-4 py-2 text-center text-white bg-blue-600 rounded-md hover:bg-blue-700"
-                  >
-                    Contact Volunteer
-                  </a>
+                <p>
+                  <span className="font-medium text-white">Applied on:</span>{" "}
+                  {formatDate(application.createdAt)}
+                </p>
+                {application.updatedAt && application.updatedAt !== application.createdAt && (
+                  <p>
+                    <span className="font-medium text-white">Last updated:</span>{" "}
+                    {formatDate(application.updatedAt)}
+                  </p>
                 )}
               </div>
             </div>
+
+            <div>
+              {isMyApplication ? (
+                <>
+                  <h2 className="mb-3 text-xl font-medium">Organization Details</h2>
+                  <div className="space-y-2 text-gray-300">
+                    <p>
+                      <span className="font-medium text-white">Name:</span>{" "}
+                      {application.ngo?.name || "Unknown Organization"}
+                    </p>
+                    {application.ngo?.email && (
+                      <p>
+                        <span className="font-medium text-white">Email:</span>{" "}
+                        {application.ngo.email}
+                      </p>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h2 className="mb-3 text-xl font-medium">Applicant Details</h2>
+                  <div className="space-y-2 text-gray-300">
+                    <p>
+                      <span className="font-medium text-white">Name:</span>{" "}
+                      {application.volunteer?.name || "Unknown Volunteer"}
+                    </p>
+                    {application.volunteer?.email && (
+                      <p>
+                        <span className="font-medium text-white">Email:</span>{" "}
+                        {application.volunteer.email}
+                      </p>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
+
+          <div className="mb-8">
+            <h2 className="mb-3 text-xl font-medium">Cover Letter</h2>
+            <div className="p-4 bg-gray-900 rounded-lg">
+              <p className="whitespace-pre-wrap text-gray-300">
+                {application.coverLetter || "No cover letter provided."}
+              </p>
+            </div>
+          </div>
+
+          {(application.feedback || canUpdateStatus) && (
+            <div className="mb-8">
+              <h2 className="mb-3 text-xl font-medium">Feedback</h2>
+              {canUpdateStatus ? (
+                <div>
+                  <textarea
+                    value={feedback}
+                    onChange={(e) => setFeedback(e.target.value)}
+                    className="w-full p-3 mb-3 text-white bg-gray-900 rounded-lg"
+                    rows={4}
+                    placeholder="Provide feedback to the applicant (optional)"
+                  />
+                </div>
+              ) : application.feedback ? (
+                <div className="p-4 bg-gray-900 rounded-lg">
+                  <p className="whitespace-pre-wrap text-gray-300">
+                    {application.feedback}
+                  </p>
+                </div>
+              ) : null}
+            </div>
+          )}
+
+          <div className="pt-6 border-t border-gray-700">
+            <h2 className="mb-4 text-xl font-medium">Opportunity Details</h2>
+            {application.opportunity ? (
+              <div className="space-y-3 text-gray-300">
+                <p>
+                  <span className="font-medium text-white">Title:</span>{" "}
+                  {application.opportunity.title}
+                </p>
+                <p>
+                  <span className="font-medium text-white">Location:</span>{" "}
+                  {application.opportunity.location}
+                </p>
+                <div>
+                  <span className="font-medium text-white">Description:</span>
+                  <p className="mt-1 ml-4">{application.opportunity.description}</p>
+                </div>
+                {application.opportunity.requirements && (
+                  <div>
+                    <span className="font-medium text-white">Requirements:</span>
+                    <p className="mt-1 ml-4">{application.opportunity.requirements}</p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-gray-400">Opportunity details not available.</p>
+            )}
+          </div>
+
+          {canUpdateStatus && (
+            <div className="flex justify-end gap-4 mt-8">
+              <button
+                onClick={() => handleStatusUpdate("rejected")}
+                className="px-5 py-2 bg-red-600 rounded-lg hover:bg-red-700"
+              >
+                Reject
+              </button>
+              <button
+                onClick={() => handleStatusUpdate("approved")}
+                className="px-5 py-2 bg-green-600 rounded-lg hover:bg-green-700"
+              >
+                Approve
+              </button>
+            </div>
+          )}
         </div>
       </div>
-      
-      {/* Status Update Confirmation Modal */}
-      {showStatusModal && (
-        <ConfirmModal
-          title={`${statusToUpdate} Application`}
-          message={`Are you sure you want to mark this application as ${statusToUpdate.toLowerCase()}?`}
-          confirmText={statusToUpdate}
-          cancelText="Cancel"
-          onConfirm={handleUpdateStatus}
-          onCancel={() => {
-            setShowStatusModal(false);
-            setStatusToUpdate('');
-          }}
-          confirmButtonClass={statusToUpdate === 'Accepted' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}
-        />
-      )}
     </div>
   );
 };
