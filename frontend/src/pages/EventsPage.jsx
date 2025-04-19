@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaCalendarAlt, FaMapMarkerAlt, FaUsers, FaSyncAlt } from "react-icons/fa";
+import { jwtDecode } from "jwt-decode"; // ✅ Import jwtDecode
 
 const EventsPage = () => {
   const [events, setEvents] = useState([]);
@@ -33,10 +34,11 @@ const EventsPage = () => {
     if (!token) return;
 
     try {
+      const { role } = jwtDecode(token);
+      if (role?.toLowerCase() !== "volunteer") return; // 👤 Only for volunteers
+
       const res = await fetch("http://localhost:3000/api/event-applications/my-events", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       if (res.ok) {
@@ -108,7 +110,7 @@ const EventsPage = () => {
               <div className="flex gap-3 pt-4 mt-auto">
                 {hasJoined ? (
                   <div className="flex-1 px-4 py-2 text-sm text-center text-green-400 border border-green-400 rounded-lg">
-                    ✅ You are already applied for this event
+                    ✅ You are already a part of this event
                   </div>
                 ) : (
                   <button
