@@ -144,13 +144,6 @@ const DashboardPage = () => {
         {lowerRole === "volunteer" && (
           <>
             <DashboardCard
-              icon={<FaCalendarAlt className="text-5xl" />}
-              title="Join Events"
-              description="Find and participate in volunteer events."
-              buttonText="View Events"
-              buttonAction={() => handleNavigate("/dashboard/events")}
-            />
-            <DashboardCard
               icon={<FaUsers className="text-5xl" />}
               title="Volunteer Opportunities"
               description="Find opportunities to volunteer with NGOs."
