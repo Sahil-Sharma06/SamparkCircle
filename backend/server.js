@@ -36,7 +36,7 @@ import adminRoutes from "./routes/adminRoutes.js";
 import adminAuthRoutes from "./routes/adminAuthRoutes.js";
 import analyticsRoutes from "./routes/analyticsRoutes.js";
 import donationRoutes from "./routes/donationRoutes.js";
-
+import eventApplicationRoutes from "./routes/eventApplicationRoutes.js";
 // ... other imports and setup ...
 
 
@@ -63,7 +63,7 @@ app.use("/api/admin/auth", adminAuthRoutes);
 app.use("/api/donations", donationRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/donations", donationRoutes);
-
+app.use("/api/event-applications", eventApplicationRoutes);
 
 // Global error handler middleware
 app.use((err, req, res, next) => {

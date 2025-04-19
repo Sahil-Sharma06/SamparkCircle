@@ -23,6 +23,9 @@ import Footer from "./components/footer";
 import VolunteerOpportunityPage from "./pages/VolunteerOpportunityPage";
 import CreateOpportunityPage from "./pages/CreateOpportunityPage";
 import ApplicationDetailPage from "./pages/ApplicationDetailPage";
+import EventsPage from "./pages/EventsPage";
+import EventDetailsPage from "./pages/EventDetailsPage"; // ✅ NEW
+import JoinEventPage from "./pages/JoinEventPage";       // ✅ NEW
 
 // Donation and Fundraiser Detail Pages
 import DonationPage from "./pages/DonationPage";
@@ -64,7 +67,9 @@ const App = () => {
 
               {/* Volunteer Routes */}
               <Route element={<ProtectedRoute allowedRoles={["volunteer"]} />}>
-                <Route path="/dashboard/events" element={<div>Events Page (To be implemented)</div>} />
+                <Route path="/dashboard/events" element={<EventsPage />} />
+                <Route path="/dashboard/events/:eventId" element={<EventDetailsPage />} />           {/* ✅ NEW */}
+                <Route path="/dashboard/events/:eventId/join" element={<JoinEventPage />} />         {/* ✅ NEW */}
                 <Route path="/dashboard/volunteer-opportunities" element={<VolunteerOpportunityPage />} />
                 <Route path="/dashboard/applications" element={<div>My Applications (To be implemented)</div>} />
               </Route>
@@ -81,7 +86,7 @@ const App = () => {
               </Route>
             </Route>
 
-            {/* Shared Routes - Available to both authenticated and unauthenticated users */}
+            {/* Shared Routes */}
             <Route path="/donate/:id" element={<DonationPage />} />
             <Route path="/fundraiser-details/:id" element={<FundraiserDetailsPage />} />
 

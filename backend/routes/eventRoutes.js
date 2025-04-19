@@ -5,13 +5,13 @@ import { authenticateUser, authorizeRole } from "../controllers/authController.j
 const router = express.Router();
 
 // POST /api/events - Create a new event (restricted to authenticated NGO users)
-router.post("/", authenticateUser, authorizeRole("NGO"), createEvent);
+router.post("/", authenticateUser, authorizeRole("ngo"), createEvent);
 
 // PUT /api/events/:eventId - Update an event (restricted to the event creator)
-router.put("/:eventId", authenticateUser, authorizeRole("NGO"), updateEvent);
+router.put("/:eventId", authenticateUser, authorizeRole("ngo"), updateEvent);
 
 // DELETE /api/events/:eventId - Delete an event (restricted to the event creator)
-router.delete("/:eventId", authenticateUser, authorizeRole("NGO"), deleteEvent);
+router.delete("/:eventId", authenticateUser, authorizeRole("ngo"), deleteEvent);
 
 // GET /api/events/:eventId - Get details of a specific event (public)
 router.get("/:eventId", getEvent);

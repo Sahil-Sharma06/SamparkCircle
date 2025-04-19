@@ -10,13 +10,10 @@ import { authenticateUser, authorizeRole } from "../controllers/authController.j
 
 const router = express.Router();
 
-// Create, update, and delete require NGO authentication
-router.post("/", authenticateUser, authorizeRole("NGO"), createOpportunity);
-router.put("/:opportunityId", authenticateUser, authorizeRole("NGO"), updateOpportunity);
-router.delete("/:opportunityId", authenticateUser, authorizeRole("NGO"), deleteOpportunity);
-
-// Public endpoints to fetch a specific opportunity and list all opportunities
-router.get("/:opportunityId", getOpportunity);
-router.get("/", listOpportunities);
+router.post("/", authenticateUser, authorizeRole("ngo"), createOpportunity);
+router.put("/:opportunityId", authenticateUser, authorizeRole("ngo"), updateOpportunity);
+router.delete("/:opportunityId", authenticateUser, authorizeRole("ngo"), deleteOpportunity);
+router.get("/:opportunityId", getOpportunity); // public
+router.get("/", listOpportunities); // public
 
 export default router;
