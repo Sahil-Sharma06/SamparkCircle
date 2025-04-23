@@ -21,9 +21,14 @@ const DonationHistoryPage = () => {
     const fetchDonations = async () => {
       try {
         // Always use lowercase roles to match what's in the database
-        const endpoint = user?.role?.toLowerCase() === "ngo" 
-          ? "/donations/ngo/received" 
-          : "/donations/history";
+        // For NGO users: /donations/ngo/received
+        // For Donor users: /donations/history
+        const userRole = user?.role?.toLowerCase() || "";
+        let endpoint = "/donations/history"; // default for donors
+        
+        if (userRole === "ngo") {
+          endpoint = "/donations/ngo/received";
+        }
         
         console.log("Fetching donations from endpoint:", endpoint);
         const res = await api.get(endpoint);
@@ -129,7 +134,7 @@ const DonationHistoryPage = () => {
           </h1>
           {user?.role?.toLowerCase() !== "ngo" && (
             <button
-              onClick={() => navigate("/donate")}
+              onClick={() => navigate("/dashboard/fundraisers")}
               className="px-4 py-2 font-medium bg-indigo-600 rounded hover:bg-indigo-700"
             >
               Make a New Donation
@@ -266,7 +271,7 @@ const DonationHistoryPage = () => {
               )}
               {user?.role?.toLowerCase() !== "ngo" && (
                 <button
-                  onClick={() => navigate("/donate")}
+                  onClick={() => navigate("/dashboard/fundraisers")}
                   className="px-4 py-2 mt-4 ml-4 bg-indigo-600 rounded hover:bg-indigo-700"
                 >
                   Make a Donation

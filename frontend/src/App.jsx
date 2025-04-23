@@ -49,6 +49,9 @@ const App = () => {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
 
+            {/* Make Fundraisers page accessible without login restriction */}
+            <Route path="/dashboard/fundraisers" element={<FundraisersPage />} />
+            
             {/* Protected Routes */}
             <Route path="/dashboard" element={
               <ProtectedRoute>
@@ -167,16 +170,9 @@ const App = () => {
               </ProtectedRoute>
             } />
 
-            {/* Removed the TestApplicationForm route that was causing the error */}
-
-            {/* Donor Routes */}
-            <Route path="/fundraisers" element={
-              <ProtectedRoute allowedRoles={["donor"]}>
-                <FundraisersPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/donations/history" element={
-              <ProtectedRoute allowedRoles={["donor"]}>
+            {/* Donor Routes - Using the exact paths requested */}
+            <Route path="/dashboard/donations/history" element={
+              <ProtectedRoute>
                 <DonationHistoryPage />
               </ProtectedRoute>
             } />

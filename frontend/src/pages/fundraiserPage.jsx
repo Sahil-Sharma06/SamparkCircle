@@ -10,10 +10,23 @@ const FundraisersPage = () => {
   const fetchFundraisers = useCallback(async () => {
     try {
       setLoading(true);
+      // This endpoint matches your backend route
       const response = await api.get("/fundraisers");
-      setFundraisers(response.data.campaigns || response.data.fundraisers || []);
+      
+      // Handle different response formats (campaigns or fundraisers)
+      let fundraiserData = [];
+      if (response.data.campaigns) {
+        fundraiserData = response.data.campaigns;
+      } else if (response.data.fundraisers) {
+        fundraiserData = response.data.fundraisers;
+      } else if (Array.isArray(response.data)) {
+        fundraiserData = response.data;
+      }
+      
+      setFundraisers(fundraiserData);
       setError("");
     } catch (err) {
+      console.error("Error fetching fundraisers:", err);
       setError("Failed to load fundraisers.");
     } finally {
       setLoading(false);
